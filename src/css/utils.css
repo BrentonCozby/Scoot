@@ -1,0 +1,39 @@
+.color-light-gray {
+  color: #fafafa;
+}
+
+.color-gray {
+  color: #3F4040;
+}
+
+.color-green {
+  color: #60b0f4;
+}
+
+.color-light-green {
+  color: #9AD93D;
+}
+
+.color-charcoal {
+  color: #262626;
+}
+
+.color-black {
+  color: #0D0D0D;
+}
+
+.color-red {
+  color: red;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}

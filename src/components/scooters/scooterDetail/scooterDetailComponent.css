@@ -1,0 +1,116 @@
+.scooter-detail-component .main-photo {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.scooter-detail-component .title {
+  font-size: 16px;
+  margin: 0;
+  padding-bottom: 16px;
+}
+
+.scooter-detail-component .reserved-message {
+  font-style: italic;
+  color: orange;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0 0 16px 0;
+}
+
+.scooter-detail-component .available-after {
+  margin: 4px 0 16px 0;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
+.scooter-detail-component .btn.cancel-reservation {
+  background-color: orange;
+  color: #fff;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.scooter-detail-component .reserve-input {
+  margin-bottom: 16px;
+}
+
+.scooter-detail-component .reserve-input .date-field {
+  display: inline-block;
+  padding-right: 12px;
+}
+
+.scooter-detail-component .reserve-input .date-field label {
+  display: block;
+  line-height: 1;
+  margin-bottom: 4px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.scooter-detail-component .reserve-input .date-input {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  box-shadow: inset 0 2px 2px #e9e9e9;
+  padding: 4px 8px 2px;
+  width: 100px;
+}
+
+.scooter-detail-component .reserve-input .date-field .react-datepicker__day--disabled,
+.scooter-detail-component .reserve-input .date-field .react-datepicker__day--disabled:hover {
+  background-color: #eee;
+  color: #bbb;
+}
+
+.scooter-detail-component .reserve-input .btn-primary {
+  margin-top: 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.scooter-detail-component .reserve-input .error-message {
+  color: red;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.scooter-detail-component .text-container {
+  max-width: 40em;
+}
+
+.scooter-detail-component .bullet-points {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 0;
+}
+
+.scooter-detail-component .bullet-points li {
+  font-weight: normal;
+}
+
+.scooter-detail-component .bullet-points li,
+.scooter-detail-component .description {
+  font-size: 14px;
+}
+
+@media all and (min-width: 48em) {
+  .scooter-detail-component .title {
+    font-size: 24px;
+  }
+
+  .scooter-detail-component .reserve-input .left-box,
+  .scooter-detail-component .reserve-input .right-box {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .scooter-detail-component .reserve-input .right-box {
+    padding-left: 16px;
+  }
+}

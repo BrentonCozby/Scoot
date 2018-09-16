@@ -1,0 +1,19 @@
+{
+    "name": "Rent-A-Bike",
+    "short_name": "Rent-A-Bike",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#60b0f4",
+    "background_color": "#60b0f4",
+    "display": "standalone"
+}

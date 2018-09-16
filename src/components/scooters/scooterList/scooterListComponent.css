@@ -1,0 +1,8 @@
+.scooter-list-component .scooter-preview-component {
+  border-bottom: 1px solid #ddd;
+}
+
+.scooter-list-component button.view-more {
+  display: inline-block;
+  margin: 16px;
+}

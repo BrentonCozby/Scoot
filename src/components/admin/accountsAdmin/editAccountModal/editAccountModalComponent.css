@@ -1,0 +1,61 @@
+.editAccountModalComponent {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, .75);
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+.editAccountModalComponent .form {
+  margin-top: 8%;
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, .3);
+}
+
+.editAccountModalComponent .form h1 {
+  margin: 0;
+  line-height: 1;
+  font-size: 24px;
+}
+
+.editAccountModalComponent .form hr {
+  margin-top: 10px;
+}
+
+.editAccountModalComponent .form footer {
+  text-align: right;
+}
+
+.editAccountModalComponent .form button[type="submit"] {
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+.editAccountModalComponent .form .account-feedback {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.editAccountModalComponent .form .account-feedback p {
+  margin: 0;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .editAccountModalComponent .form {
+    padding: 16px;
+  }
+
+  .editAccountModalComponent .form h1 {
+    font-size: 32px;
+  }
+}

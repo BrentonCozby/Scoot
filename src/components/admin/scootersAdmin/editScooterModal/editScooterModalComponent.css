@@ -1,0 +1,66 @@
+.edit-scooter-modal-component {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, .75);
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+.edit-scooter-modal-component .form {
+  margin-top: 8%;
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, .3);
+}
+
+.edit-scooter-modal-component .form h1 {
+  margin: 0;
+  line-height: 1;
+  font-size: 24px;
+}
+
+.edit-scooter-modal-component .form input[disabled] {
+  border: none;
+  cursor: default;
+}
+
+.edit-scooter-modal-component .form hr {
+  margin-top: 10px;
+}
+
+.edit-scooter-modal-component .form footer {
+  text-align: right;
+}
+
+.edit-scooter-modal-component .form button[type="submit"] {
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+.edit-scooter-modal-component .form .service-feedback {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.edit-scooter-modal-component .form .service-feedback p {
+  margin: 0;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .edit-scooter-modal-component .form {
+    padding: 16px;
+  }
+
+  .edit-scooter-modal-component .form h1 {
+    font-size: 32px;
+  }
+}

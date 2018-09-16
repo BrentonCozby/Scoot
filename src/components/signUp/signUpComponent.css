@@ -1,0 +1,53 @@
+.sign-up-component {
+  display: flex;
+  justify-content: center;
+}
+
+.sign-up-component .sign-up-form {
+  margin-top: 8%;
+  width: 100%;
+  max-width: 400px;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, .3);
+}
+
+.sign-up-component .sign-up-form h1 {
+  margin: 0;
+  line-height: 1;
+  font-size: 24px;
+}
+
+.sign-up-component .sign-up-form hr {
+  margin-top: 10px;
+}
+
+.sign-up-component .sign-up-form footer {
+  text-align: right;
+}
+
+.sign-up-component .sign-up-form button[type="submit"] {
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+.sign-up-component .sign-up-form .account-feedback {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.sign-up-component .sign-up-form .account-feedback p {
+  margin: 0;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .sign-up-component .sign-up-form {
+    padding: 16px;
+  }
+
+  .sign-up-component .sign-up-form h1 {
+    font-size: 32px;
+  }
+}

@@ -1,0 +1,27 @@
+.navbar-component {
+  position: fixed;
+  width: 100vw;
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, .7);
+  z-index: 100;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+}
+
+.navbar-component nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.navbar-component nav .nav-link {
+  margin-right: 16px;
+  text-decoration: none;
+  padding: 0;
+  border: none;
+  font-size: 14px;
+}
+
+.navbar-component nav .nav-link.is-active {
+  border-bottom: 3px solid #60b0f4;
+}

@@ -1,0 +1,27 @@
+.search-component .form input[disabled] {
+  border: none;
+  cursor: default;
+}
+
+.search-component .form hr {
+  margin: 16px 0 0 0;
+}
+
+.search-component .form .section-divider {
+  margin: 24px 0 4px 0;
+}
+
+.search-component .form footer {
+  text-align: right;
+  margin-top: 16px;
+}
+
+.search-component .form .service-feedback {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.search-component .form .service-feedback p {
+  margin: 0;
+  font-size: 12px;
+}

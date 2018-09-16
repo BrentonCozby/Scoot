@@ -1,0 +1,15 @@
+.scooter-filters-component {
+  margin-bottom: 8px;
+}
+
+.scooter-filters-component .input-component {
+  margin: 4px 0 12px 0;
+}
+
+.scooter-filters-component .buttons-row {
+  text-align: right;
+}
+
+.scooter-filters-component .buttons-row button {
+  margin-left: 16px;
+}

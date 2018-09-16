@@ -1,0 +1,59 @@
+.form-input {
+  margin-top: 16px;
+}
+
+.form-input label {
+  display: block;
+  line-height: 1;
+  margin-bottom: 3px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.form-input input, select, textarea {
+  display: block;
+  width: 100%;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: 200ms;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 4px 6px;
+  line-height: 1.2;
+}
+
+.form-input select {
+    background-image: url('../forms/input/select/selectArrows.png');
+    background-size: auto 50%;
+    background-position: 98% 50%;
+    background-repeat: no-repeat;
+    padding-right: 14px;
+}
+
+.form-input input::-webkit-outer-spin-button,
+.form-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.form-input .react-datepicker-wrapper,
+.form-input .react-datepicker__input-container {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .form-input input:focus,
+  .form-input input:hover,
+  .form-input select:focus,
+  .form-input select:hover,
+  .form-input textarea:focus,
+  .form-input textarea:hover {
+    border-color: #60b0f4;
+    outline: none;
+  }
+}

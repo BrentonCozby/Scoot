@@ -1,0 +1,9 @@
+.rating {
+  color: #F7CB45;
+  margin-bottom: .5em;
+}
+
+.rating .review-count {
+  font-size: 12px;
+  vertical-align: middle;
+}

@@ -1,0 +1,42 @@
+.reservations-admin-component {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 10px;
+}
+
+.reservations-admin-component .reservations-table {
+  margin-top: 16px;
+}
+
+.reservations-admin-component .table-title-row {
+  margin-bottom: 8px;
+}
+
+.reservations-admin-component .table-title {
+  margin: 0;
+}
+
+.reservations-admin-component .table-title-row .btn {
+  border-radius: 3px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 1px -1px rgba(0, 0, 0, .3);
+}
+
+.reservations-admin-component .scooter-photo {
+  width: 100%;
+}
+
+.reservations-admin-component .reservations-table .rt-td:nth-child(2) {
+  white-space: unset;
+}
+
+.reservations-admin-component .cell-buttons button {
+  border: none;
+  padding: 0;
+  margin: 0 4px;
+}
+
+.reservations-admin-component .cell-buttons button.delete:hover,
+.reservations-admin-component .cell-buttons button.delete:focus {
+  color: red;
+}

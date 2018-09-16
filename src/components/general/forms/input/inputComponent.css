@@ -1,0 +1,19 @@
+.input-component label,
+.input-component input,
+.input-component .message {
+  display: block;
+}
+
+.input-component .message {
+  line-height: 1;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.input-component .message.error {
+  color: red;
+}
+
+.input-component .message.success {
+  color: #60b0f4;
+}

@@ -1,0 +1,9 @@
+.scooter-map-component {
+  width: 100%;
+  height: 400px;
+  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, .3);
+}
+
+.scooter-map-component img {
+  background-color: unset;
+}

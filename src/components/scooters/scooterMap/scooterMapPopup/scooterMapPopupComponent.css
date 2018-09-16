@@ -1,0 +1,15 @@
+.scooter-map-popup-component {
+  width: 180px;
+}
+
+.scooter-map-popup-component img {
+  width: 100%;
+}
+
+.scooter-map-popup-component a {
+  text-decoration: none;
+}
+
+.scooter-map-popup-component .model {
+  font-size: 12px;
+}

@@ -1,0 +1,5 @@
+.date-component-popper .react-datepicker__day--disabled,
+.date-component-popper .react-datepicker__day--disabled:hover {
+  background-color: #eee;
+  color: #bbb;
+}

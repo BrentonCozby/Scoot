@@ -1,0 +1,44 @@
+.scooters-admin-component {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 10px;
+}
+
+.scooters-admin-component .table-title-row {
+  margin-bottom: 8px;
+}
+
+.scooters-admin-component .table-title {
+  margin: 0;
+}
+
+.scooters-admin-component .table-title-row .btn {
+  background-color: #fff;
+  border-radius: 3px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3);
+}
+
+.scooters-admin-component .scooters-table .rt-td:nth-child(3) {
+  white-space: unset;
+}
+
+.scooters-admin-component .scooter-photo {
+  width: 100%;
+}
+
+.scooters-admin-component .cell-buttons button {
+  border: none;
+  padding: 0;
+  margin: 0 4px;
+}
+
+.scooters-admin-component .cell-buttons button.edit:hover,
+.scooters-admin-component .cell-buttons button.edit:focus {
+  color: #9AD93D;
+}
+
+.scooters-admin-component .cell-buttons button.delete:hover,
+.scooters-admin-component .cell-buttons button.delete:focus {
+  color: red;
+}

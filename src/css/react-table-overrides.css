@@ -1,0 +1,18 @@
+.ReactTable {
+  line-height: 1.2;
+  font-weight: normal;
+  background-color: #fff;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+}
+
+.ReactTable .rt-th {
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 11px;
+}
+
+.ReactTable .rt-td {
+  font-size: 14px;
+}

@@ -1,0 +1,78 @@
+.accounts-admin-component {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 10px;
+}
+
+.accounts-admin-component .table-actions-row {
+  background-color: #ddd;
+  border-radius: 3px;
+}
+
+.accounts-admin-component .table-actions-row .label {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: normal;
+  margin: 0;
+  background-color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: 3px 6px;
+  margin-right: 5px;
+  vertical-align: middle;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border: 1px solid #ddd;
+}
+
+.accounts-admin-component .table-actions-row .btn {
+  font-weight: normal;
+  background-color: #fff;
+  color: #3F4040;
+  margin: 6px 5px;
+  padding: 5px 8px;
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, .4);
+}
+
+.accounts-admin-component .table-actions-row .btn.is-active {
+  background-color: #9AD93D;
+  color: #222;
+}
+
+.accounts-admin-component .table-title-row {
+  margin-bottom: 8px;
+}
+
+.accounts-admin-component .table-title {
+  margin: 0;
+}
+
+.accounts-admin-component .table-title-row .btn {
+  background-color: #fff;
+  border-radius: 3px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3);
+}
+
+.accounts-admin-component .cell-buttons button {
+  border: none;
+  padding: 0;
+  margin: 0 4px;
+}
+
+.accounts-admin-component .cell-buttons button.edit:hover,
+.accounts-admin-component .cell-buttons button.edit:focus {
+  color: #9AD93D;
+}
+
+.accounts-admin-component .cell-buttons button.delete:hover,
+.accounts-admin-component .cell-buttons button.delete:focus {
+  color: red;
+}
+
+.accounts-admin-component .cell-buttons button.view-reservations:hover,
+.accounts-admin-component .cell-buttons button.view-reservations:focus {
+  color: #60b0f4;
+}

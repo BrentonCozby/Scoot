@@ -1,0 +1,8 @@
+.scooter-dashboard-component #dashboard-scooter-map {
+  height: 400px;
+  margin-bottom: 8px;
+}
+
+.scooter-dashboard-component .scooter-list-component {
+  margin-top: 8px;
+}
