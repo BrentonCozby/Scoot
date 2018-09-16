@@ -24,17 +24,17 @@ async function authMiddleware(req, res, next) {
     return next(err, false)
   }
 
-  if (result && result.length) {
-    return next(null, {
+  req.user = result && result.length
+    ? {
       accountId: result[0].accountId,
       email: result[0].email,
       firstName: result[0].firstName,
       lastName: result[0].lastName,
       roles: result[0].roles
-    })
-  } else {
-    return next(null, false)
-  }
+    }
+    : false
+
+  next()
 }
 
 module.exports.authMiddleware = authMiddleware
