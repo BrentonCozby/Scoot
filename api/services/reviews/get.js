@@ -1,5 +1,5 @@
 const router = require('express-promise-router')()
-const { passport } = require('@root/passport.js')
+const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
 const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.js')
 
@@ -61,7 +61,7 @@ async function routeHandler(req, res, next) {
 }
 
 router.post('*',
-  passport.authenticate('jwt', { session: false }),
+  authMiddleware,
   routeHandler)
 
 module.exports = router

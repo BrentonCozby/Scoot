@@ -12,12 +12,9 @@ const bodyParser = require('body-parser')
 const app = express()
 const router = require('./router.js')
 const { pool } = require('../database/index.js')
-const { passport } = require('./passport.js')
 
-require('dotenv').config({ path: 'api.env' })
+require('dotenv').config({ path: '../api.env' })
 app.use(require('morgan')('dev'))
-
-app.use(passport.initialize())
 
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['http://localhost:3000'])

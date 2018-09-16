@@ -1,9 +1,9 @@
 const router = require('express-promise-router')()
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const { jwtOptions } = require('@root/passport.js')
 const { getAccountByEmail } = require('./queries/index.js')
 const { validateRequiredParams, to } = require('@utils/index.js')
+const { JWT_SECRET } = require('../../authMiddleware.js')
 
 async function routeHandler(req, res) {
   const email = req.body.email
@@ -28,7 +28,7 @@ async function routeHandler(req, res) {
   }
 
   if (!account){
-    res.status(409).json({
+    res.status(401).json({
       message: 'Invalid email',
       messageMap: {
         email: 'Invalid email'
@@ -52,7 +52,7 @@ async function routeHandler(req, res) {
       expirationMs: new Date().getTime() + parseInt(process.env.TOKEN_EXPIRATION_MS)
     }
 
-    const token = jwt.sign(tokenPayload, jwtOptions.secretOrKey)
+    const token = jwt.sign(tokenPayload, new Buffer(JWT_SECRET, 'base64'))
 
     res.json({
       accessToken: token,
@@ -61,7 +61,7 @@ async function routeHandler(req, res) {
   })
   .catch(err => {
     console.log(err);
-    res.status(409).json({
+    res.status(401).json({
       message: 'Invalid password',
       messageMap: {
         password: 'Invalid password'

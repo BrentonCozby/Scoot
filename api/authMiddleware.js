@@ -1,19 +1,16 @@
-const passport = require("passport")
-const passportJWT = require("passport-jwt")
-const ExtractJwt = passportJWT.ExtractJwt
-const JwtStrategy = passportJWT.Strategy
+const jwt = require('jsonwebtoken')
 const { to } = require('@utils/index.js')
 const { getWhere } = require('@services/accounts/queries/index.js')
 
 require('dotenv').config({ path: '../api.env' })
 
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: new Buffer(process.env.JWT_SECRET, 'base64')
-}
-
-const strategy = new JwtStrategy(jwtOptions, async function(jwtPayload, next) {
+async function authMiddleware(req, res, next) {
   const selectFields = ['email', 'first_name', 'last_name', 'roles']
+
+  const encodedToken = String(req.headers.authorization || '').includes('Bearer ')
+    ? req.headers.authorization.split('Bearer ')[1]
+    : ''
+  const jwtPayload = jwt.verify(encodedToken, new Buffer(process.env.JWT_SECRET, 'base64'))
 
   const [err, result] = await to(getWhere({
     where: {
@@ -38,9 +35,7 @@ const strategy = new JwtStrategy(jwtOptions, async function(jwtPayload, next) {
   } else {
     return next(null, false)
   }
-})
+}
 
-passport.use(strategy)
-
-module.exports.jwtOptions = jwtOptions
-module.exports.passport = passport
+module.exports.authMiddleware = authMiddleware
+module.exports.JWT_SECRET = process.env.JWT_SECRET

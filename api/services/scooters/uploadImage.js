@@ -1,5 +1,5 @@
 const router = require('express-promise-router')()
-const { passport } = require('@root/passport.js')
+const { authMiddleware } = require('@root/authMiddleware.js')
 const { verifyOneOfRolesMiddleware, validateRequiredParams, to } = require('@utils/index.js')
 const { uploadScooterImage } = require('@utils/aws-s3.js')
 const multer = require('multer')
@@ -40,7 +40,7 @@ async function routeHandler(req, res) {
 }
 
 router.put('*',
-  passport.authenticate('jwt', { session: false }),
+  authMiddleware,
   verifyOneOfRolesMiddleware(['admin', 'manager']),
   upload.single('image'),
   routeHandler)
