@@ -4,13 +4,13 @@ import Authorize from 'components/general/auth/authorizeComponent.js'
 import ScooterService from 'services/scooter/scooterService.js'
 import ReactTable from 'react-table'
 import EditScooterModal from './editScooterModal/editScooterModalComponent.js'
-import { sortString, sortInt, sortFloat } from 'utils/sort.js'
+import { sortString, sortInt } from 'utils/sort.js'
 import { filterString } from 'utils/filter.js'
 
 class ScootersAdmin extends Component {
 
   state = {
-    scootersTableTitle: 'Bicycles',
+    scootersTableTitle: 'Scooters',
     scootersColumns: [
       {
         Header: 'ID',
@@ -46,12 +46,6 @@ class ScootersAdmin extends Component {
         minWidth: 15,
         sortMethod: sortString,
         filterMethod: (searchTerm, cell) => filterString(searchTerm.value, cell.color)
-      },
-      {
-        Header: 'Weight',
-        accessor: 'weight',
-        minWidth: 10,
-        sortMethod: sortFloat
       },
       {
         Header: '',
@@ -92,7 +86,6 @@ class ScootersAdmin extends Component {
         'model',
         'photo',
         'color',
-        'weight',
         'description',
         'geom'
       ],

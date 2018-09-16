@@ -28,6 +28,19 @@
   margin-top: 20px;
 }
 
+.admin-dashboard-component .card .scooter-icon {
+  width: 50px;
+  height: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  margin: 25px 0 0 0;
+}
+
+.admin-dashboard-component .card .scooter-icon path {
+  fill: #fff;
+}
+
 @media all and (min-width: 48em) {
   .admin-dashboard-component .card {
     width: 220px;

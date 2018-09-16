@@ -39,7 +39,7 @@ class ScooterDetail extends Component {
       where: {
         scooterId: this.props.match.params.scooterId
       },
-      selectFields: ['scooterId', 'model', 'photo', 'avgRating', 'color', 'weight', 'description']
+      selectFields: ['scooterId', 'model', 'photo', 'avgRating', 'color', 'description']
     }))
 
     const scooter = { ...(getScooterErr ? {} : scooterList[0] || {})}
@@ -266,7 +266,6 @@ class ScooterDetail extends Component {
             <div className="text-container">
               <ul className="bullet-points">
                 <li>• Color: {scooter.color}</li>
-                <li>• Weight: {scooter.weight} lbs</li>
               </ul>
               <p className="description">{scooter.description}</p>
             </div>

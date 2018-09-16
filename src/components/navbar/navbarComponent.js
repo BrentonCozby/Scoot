@@ -2,10 +2,10 @@ import React from 'react'
 import './navbarComponent.css'
 import { NavLink } from 'react-router-dom'
 import AuthService, { isAuthenticated, logout } from 'services/auth/authService.js'
-import logo from './rent-a-scooter-logo.png'
+import logo from './scoot-logo.png'
 
 function Logo({ navbarHeight }) {
-  const RATIO = 1000 / 163
+  const RATIO = 964 / 233
 
   const containerStyle = {
     boxSizing: 'border-box',
@@ -30,7 +30,7 @@ function Navbar({ height }) {
     const roles = AuthService.getAuthenticatedAccount().roles || ''
 
     const links = [
-      <NavLink key="scooters" to="/dashboard/scooters" className="btn btn-link nav-link" activeClassName="is-active">Bicycles</NavLink>
+      <NavLink key="scooters" to="/dashboard/scooters" className="btn btn-link nav-link" activeClassName="is-active">Scooters</NavLink>
     ]
 
     if (roles.includes('manager') || roles.includes('admin')) {

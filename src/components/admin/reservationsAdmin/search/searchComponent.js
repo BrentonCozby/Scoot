@@ -35,16 +35,6 @@ class Search extends Component {
           type: 'text',
           value: ''
         }
-      },
-      weight: {
-        label: 'Weight (lbs)',
-        columnSize: 2,
-        attributes: {
-          id: 'weight',
-          type: 'text',
-          maxLength: '10',
-          value: ''
-        }
       }
     },
     accountFields: {
@@ -115,7 +105,6 @@ class Search extends Component {
       scooterId: this.state.scooterFields.scooterId.attributes.value || undefined,
       model: this.state.scooterFields.model.attributes.value || undefined,
       color: this.state.scooterFields.color.attributes.value || undefined,
-      weight: this.state.scooterFields.weight.attributes.value || undefined,
       accountId: this.state.accountFields.accountId.attributes.value || undefined,
       firstName: this.state.accountFields.firstName.attributes.value || undefined,
       lastName: this.state.accountFields.lastName.attributes.value || undefined,

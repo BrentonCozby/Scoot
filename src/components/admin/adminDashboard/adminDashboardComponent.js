@@ -3,6 +3,9 @@ import './adminDashboardComponent.css'
 import { Link } from 'react-router-dom'
 import Authorize from 'components/general/auth/authorizeComponent.js'
 
+/* eslint import/no-webpack-loader-syntax: off */
+import ScooterIcon from '-!svg-react-loader!./scooter.svg'
+
 function AdminDashboard() {
   return (
     <Authorize authorizedRoles={['admin', 'manager']}>
@@ -13,8 +16,8 @@ function AdminDashboard() {
             <i className="icon fas fa-user"/>
           </Link>
           <Link to="/admin/scooters" className="card">
-            Bicycles
-            <i className="icon fas fa-bicycle"/>
+            Scooters
+            <ScooterIcon className="scooter-icon"/>
           </Link>
           <Link to="/admin/reservations" className="card">
             Reservations

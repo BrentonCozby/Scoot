@@ -56,7 +56,7 @@ class ScooterList extends Component {
         lat: this.props.currentPosition.lat,
         lng: this.props.currentPosition.lng
       },
-      selectFields: ['scooter_id', 'model', 'photo', 'description', 'color', 'weight', 'avgRating', 'geom'],
+      selectFields: ['scooter_id', 'model', 'photo', 'description', 'color', 'avgRating', 'geom'],
       orderBy: {
         distance: 'asc'
       }
@@ -79,7 +79,7 @@ class ScooterList extends Component {
     })
   }
 
-  showMoreBicycles = () => {
+  showMoreScooters = () => {
     this.updateDisplayedList({ increaseLimit: true })
   }
 
@@ -97,7 +97,7 @@ class ScooterList extends Component {
           </div>
           <div className="col-xs-12 text-center">
             {this.props.scooterList.length > displayedList.length &&
-              <button className="btn btn-secondary view-more" onClick={this.showMoreBicycles}>Show More</button>
+              <button className="btn btn-secondary view-more" onClick={this.showMoreScooters}>Show More</button>
             }
           </div>
         </div>

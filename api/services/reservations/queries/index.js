@@ -31,7 +31,6 @@ const READABLE_SCOOTER_COLUMNS = [
   'model',
   'photo',
   'color',
-  'weight',
   'description',
   'geom'
 ]

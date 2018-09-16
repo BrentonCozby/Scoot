@@ -26,7 +26,6 @@ function ScooterPreview ({
               </div>
               <ul className="bullet-points">
                 <li>Color: {scooter.color}</li>
-                <li>Weight: {scooter.weight} lbs</li>
               </ul>
             </div>
           </div>

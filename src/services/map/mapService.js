@@ -35,7 +35,7 @@ export function getCurrentPosition() {
 
 const markerIcons = {
   redMarker: '/images/icons/red-map-marker.png',
-  scooter: '/images/icons/bicycle.png'
+  scooter: '/images/icons/scooter.png'
 }
 
 export function createCurrentPositionMarker({ map, currentPosition }) {

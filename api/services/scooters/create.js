@@ -7,12 +7,11 @@ async function routeHandler(req, res) {
   const model = req.body.model
   const photo = req.body.photo
   const color = req.body.color
-  const weight = req.body.weight
   const description = req.body.description
   const lat = req.body.lat
   const lng = req.body.lng
 
-  const validation = validateRequiredParams(['model', 'photo', 'color', 'weight', 'description', 'lat', 'lng'], req.body)
+  const validation = validateRequiredParams(['model', 'photo', 'color', 'description', 'lat', 'lng'], req.body)
 
   if (!validation.isValid) {
     return res.status(409).json({
@@ -22,7 +21,7 @@ async function routeHandler(req, res) {
   }
 
   const [createErr, result] = await to(queries.createScooter({
-    data: { model, photo, color, weight, description, lat, lng }
+    data: { model, photo, color, description, lat, lng }
   }))
 
   if (createErr) {

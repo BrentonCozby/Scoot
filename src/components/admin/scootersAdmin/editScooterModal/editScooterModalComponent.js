@@ -67,17 +67,6 @@ class EditScooterModal extends Component {
           value: this.props.scooter.color || ''
         }
       },
-      weight: {
-        label: 'Weight (lbs)',
-        columnSize: 3,
-        attributes: {
-          id: 'weight',
-          type: 'text',
-          maxLength: '10',
-          required: true,
-          value: this.props.scooter.weight || ''
-        }
-      },
       lat: {
         label: 'Latitude',
         columnSize: 3,
@@ -146,7 +135,6 @@ class EditScooterModal extends Component {
       model: this.state.fields.model.attributes.value,
       photo: this.state.fields.photo.attributes.value,
       color: this.state.fields.color.attributes.value,
-      weight: parseFloat(this.state.fields.weight.attributes.value),
       description: this.state.fields.description.attributes.value,
       lat: parseFloat(this.state.fields.lat.attributes.value),
       lng: parseFloat(this.state.fields.lng.attributes.value)

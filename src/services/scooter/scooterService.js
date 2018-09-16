@@ -32,14 +32,13 @@ export async function getWhere({ where, selectFields, orderBy, distanceFrom }) {
   return scooterList || []
 }
 
-export function createScooter({ photo, photoUpload, model, color, weight, description, lat, lng }) {
+export function createScooter({ photo, photoUpload, model, color, description, lat, lng }) {
   const endpoint = '/scooters/create'
   const body = {
     photo,
     photoUpload,
     model,
     color,
-    weight,
     description,
     lat,
     lng

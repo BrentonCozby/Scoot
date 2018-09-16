@@ -43,5 +43,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
-  "repository": "https://github.com/BrentonCozby/scoot.git"
+  "repository": "https://github.com/BrentonCozby/scoot.git",
+  "devDependencies": {
+    "svg-react-loader": "^0.4.5"
+  }
 }

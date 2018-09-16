@@ -48,15 +48,6 @@ class ScooterFilters extends Component {
           value: ''
         }
       },
-      weight: {
-        label: 'Weight',
-        columnSize: 2,
-        attributes: {
-          id: 'weight',
-          type: 'number',
-          value: ''
-        }
-      },
       avgRating: {
         label: 'Rating',
         columnSize: 2,
@@ -117,8 +108,7 @@ class ScooterFilters extends Component {
   filterScooters = () => {
     const filters = {
       color: this.state.fields.color.attributes.value || undefined,
-      model: this.state.fields.model.attributes.value || undefined,
-      weight: this.state.fields.weight.attributes.value || undefined
+      model: this.state.fields.model.attributes.value || undefined
     }
 
     if (moment(this.state.fields.startDate.dateValue).isValid() && moment(this.state.fields.endDate.dateValue).isValid()) {

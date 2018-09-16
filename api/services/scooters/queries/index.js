@@ -7,7 +7,6 @@ const READABLE_SCOOTER_COLUMNS = [
   'model',
   'photo',
   'color',
-  'weight',
   'description',
   'geom'
 ]
@@ -16,7 +15,6 @@ const EDITABLE_SCOOTER_COLUMNS = [
   'model',
   'photo',
   'color',
-  'weight',
   'description',
   'lat',
   'lng'
