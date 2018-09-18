@@ -1,11 +1,15 @@
 const sanitizeHtml = require('sanitize-html')
-const camelCase = require('camelcase')
-const decamelize = require('decamelize')
+const {
+  includesOneOf,
+  includesEvery,
+  decamelizeList,
+  camelCaseMapKeys,
+  to,
+  validateRequiredValues
+} = require('brenton-js-utils')
 
 function verifyAllRoles(rolesToVerify, rolesList) {
-  return rolesToVerify.every(role => {
-    return rolesList.includes(role)
-  })
+  return includesEvery({requiredValues: rolesToVerify, actualValues: rolesList})
 }
 
 function verifyAllRolesMiddleware(rolesToVerify) {
@@ -21,9 +25,7 @@ function verifyAllRolesMiddleware(rolesToVerify) {
 }
 
 function verifyOneOfRoles(rolesToVerify, rolesList) {
-  return rolesToVerify.some(role => {
-    return rolesList.includes(role)
-  })
+  return includesOneOf({requiredValues: rolesToVerify, actualValues: rolesList})
 }
 
 function verifyOneOfRolesMiddleware(rolesToVerify) {
@@ -42,44 +44,8 @@ function sanitize(values) {
   return values.map(val => sanitizeHtml(val))
 }
 
-function camelCaseMapKeys(map) {
-  if (!map) {
-    return map
-  }
-
-  return Object.entries(map).reduce((newMap, [key, value]) => {
-    newMap[camelCase(key)] = value
-
-    return newMap
-  }, {})
-}
-
-function decamelizeList(list) {
-  return list.map(str => decamelize(str))
-}
-
 function validateRequiredParams(requiredParamsList, givenParams) {
-  let isValid = true
-  let messageMap = {}
-
-  requiredParamsList.forEach(key => {
-    if (!givenParams[key]) {
-      isValid = false
-      messageMap[key] = 'Required'
-    }
-  })
-
-  return {
-    isValid,
-    messageMap
-  }
-}
-
-function to(promise) {
-   return promise.then(data => {
-      return [null, data];
-   })
-   .catch(err => [err]);
+  return validateRequiredValues({requiredKeys: requiredParamsList, valuesMap: givenParams})
 }
 
 module.exports.verifyAllRoles = verifyAllRoles
