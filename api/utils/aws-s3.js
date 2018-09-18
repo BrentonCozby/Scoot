@@ -4,7 +4,7 @@ const { updateScooter } = require('@services/scooters/queries/index.js')
 
 function uploadScooterImage({ scooterId, image, filepath }) {
   params = {
-    Bucket: 'rent-a-scooter-cozby',
+    Bucket: 'scoot-cozby',
     Key: filepath,
     Body: image,
     ACL: 'public-read'
@@ -16,7 +16,7 @@ function uploadScooterImage({ scooterId, image, filepath }) {
         return reject(err)
       }
 
-      const photoUrl = `https://s3-us-west-2.amazonaws.com/rent-a-scooter-cozby/${filepath}?t=${new Date().getTime()}`
+      const photoUrl = `https://s3-us-west-2.amazonaws.com/scoot-cozby/${filepath}?t=${new Date().getTime()}`
 
       updateScooter({
         scooterId,
