@@ -1,4 +1,4 @@
-const express = require('express')
+require('express')
 const router = require('express-promise-router')()
 const fs = require('fs')
 const { resolve } = require('path')

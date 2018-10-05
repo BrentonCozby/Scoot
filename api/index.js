@@ -7,25 +7,10 @@ moduleAlias.addAliases({
   '@utils': resolve(__dirname, 'utils')
 })
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
-const router = require('./router.js')
+const app = require('./app')
 const { pool } = require('../database/index.js')
 
 require('dotenv').config({ path: '../api.env' })
-app.use(require('morgan')('dev'))
-
-app.use((req, res, next) => {
-    res.append('Access-Control-Allow-Origin', ['http://localhost:3000'])
-    res.append('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS')
-    res.append('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    next()
-})
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-app.use('/', router)
 
 app.set('port', process.env.PORT)
 
