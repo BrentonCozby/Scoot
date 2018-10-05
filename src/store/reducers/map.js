@@ -5,8 +5,8 @@ import {
 
 const initialState = {
   currentPosition: {
-    lat: 25.771635,
-    lng: -80.190096
+    lat: 26.272623,
+    lng: -80.269850
   },
   mapBounds: {
     xmin: -80.290096,

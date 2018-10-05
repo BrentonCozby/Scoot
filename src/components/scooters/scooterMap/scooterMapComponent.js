@@ -12,7 +12,7 @@ class ScooterMap extends Component {
   }
 
   componentDidMount() {
-    this.props.updateCurrentPosition()
+    // this.props.updateCurrentPosition()
 
     const defaultMapOptions = {
       center: {
