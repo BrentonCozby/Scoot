@@ -20,7 +20,7 @@ async function authMiddleware(req, res, next) {
   }))
 
   if (err) {
-    console.log(err)
+    console.error(err)
     return next(err, false)
   }
 

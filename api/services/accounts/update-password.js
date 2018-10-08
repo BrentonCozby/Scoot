@@ -34,7 +34,7 @@ async function routeHandler(req, res) {
   }))
 
   if (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

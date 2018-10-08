@@ -21,7 +21,7 @@ async function routeHandler(req, res) {
   let [getAccountErr, account] = await to(getAccountByEmail({ email }))
 
   if (getAccountErr) {
-    console.log(getAccountErr);
+    console.error(getAccountErr);
     return res.status(500).json({
       message: 'Internal server error.'
     })
@@ -60,7 +60,7 @@ async function routeHandler(req, res) {
     })
   })
   .catch(err => {
-    console.log(err);
+    console.error(err);
     res.status(401).json({
       message: 'Invalid password',
       messageMap: {

@@ -24,7 +24,7 @@ async function routeHandler(req, res) {
   }))
 
   if (getErr) {
-    console.log(getErr);
+    console.error(getErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 
@@ -40,7 +40,7 @@ async function routeHandler(req, res) {
   const [createErr, result] = await to(queries.createAccount({ email, password, firstName, lastName, roles }))
 
   if (createErr) {
-    console.log(createErr);
+    console.error(createErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

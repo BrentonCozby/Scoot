@@ -15,7 +15,7 @@ async function getAll(req, res, next) {
   const [err, reviewList] = await to(queries.getAll({ selectFields: req.body.selectFields }))
 
   if (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 
@@ -38,7 +38,7 @@ async function getWhere(req, res, next) {
   }))
 
   if (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

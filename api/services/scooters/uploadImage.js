@@ -32,7 +32,7 @@ async function routeHandler(req, res) {
   }))
 
   if (uploadErr) {
-    console.log(uploadErr)
+    console.error(uploadErr)
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

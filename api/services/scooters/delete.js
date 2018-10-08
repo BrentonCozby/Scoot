@@ -16,7 +16,7 @@ async function routeHandler(req, res) {
   const [deleteErr, result] = await to(queries.deleteScooter({ scooterId: req.body.scooterId }))
 
   if (deleteErr) {
-    console.log(deleteErr);
+    console.error(deleteErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

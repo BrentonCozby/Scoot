@@ -171,8 +171,6 @@ function createScooter({ data }) {
   }
 
   const queryString = `INSERT INTO scooter(${columns.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
-  console.log(queryString)
-  console.log(queryData)
 
   return query(queryString, sanitize(queryData))
 }

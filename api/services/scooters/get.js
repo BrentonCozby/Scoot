@@ -21,7 +21,7 @@ async function getWhere(req, res) {
   }))
 
   if (getScootersErr) {
-    console.log(getScootersErr);
+    console.error(getScootersErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 
