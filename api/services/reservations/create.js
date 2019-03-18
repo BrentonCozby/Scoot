@@ -20,7 +20,7 @@ async function routeHandler(req, res, next) {
   const [createErr, result] = await to(queries.create({ accountId, scooterId, data }))
 
   if (createErr) {
-    console.error(createErr);
+    console.error('\nError:\n', createErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

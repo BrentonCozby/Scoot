@@ -10,7 +10,7 @@ moduleAlias.addAliases({
 const app = require('./app')
 const { pool } = require('../database/index.js')
 
-require('dotenv').config({ path: '../api.env' })
+require('dotenv').config({ path: resolve('api.env') })
 
 app.set('port', process.env.PORT)
 

@@ -10,7 +10,7 @@ async function getAll(req, res) {
   }))
 
   if (getAllErr) {
-    console.error(getAllErr);
+    console.error('\nError:\n', getAllErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 
@@ -36,7 +36,7 @@ async function getWhere(req, res) {
   }))
 
   if (getErr) {
-    console.error(getErr);
+    console.error('\nError:\n', getErr);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

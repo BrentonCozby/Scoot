@@ -17,7 +17,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 process.on('uncaughtException', (error) => {
   // I just received an error that was never handled, time to handle it and then decide whether a restart is needed
-  production(error)
+  production(error || {status: 500, message: JSON.stringify(message)})
 });
 
 module.exports.notFound = notFound

@@ -30,10 +30,10 @@ class ScooterMap extends Component {
 
     map.addListener('bounds_changed', debounce(() => {
       const bounds = map.getBounds()
-      const xmin = bounds.b.b
-      const ymin = bounds.f.b
-      const xmax = bounds.b.f
-      const ymax = bounds.f.f
+      const xmin = bounds.ga.j
+      const ymin = bounds.ma.j
+      const xmax = bounds.ga.l
+      const ymax = bounds.ma.l
 
       this.props.updateMapBounds({ xmin, ymin, xmax, ymax })
     }, 300))

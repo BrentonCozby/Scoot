@@ -36,9 +36,17 @@ export function getEncodedAccessToken() {
 }
 
 export function getDecodedAccessToken() {
-  const token = getEncodedAccessToken()
+  const token = getEncodedAccessToken() || {}
+  let decodedToken = {}
 
-  return token ? jwt.verify(token, new Buffer(process.env.REACT_APP_TOKEN_SECRET, 'base64')) : {}
+  try {
+    decodedToken = jwt.verify(token, new Buffer.from(process.env.REACT_APP_TOKEN_SECRET, 'base64')) || {}
+  } catch(err) {
+    clearSession()
+    decodedToken = {}
+  }
+
+  return decodedToken
 }
 
 export function getTokenExpirationMs() {

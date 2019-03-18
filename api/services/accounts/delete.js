@@ -16,7 +16,7 @@ async function routeHandler(req, res) {
   const [err, result] = await to(queries.deleteAccount({ accountId: req.body.accountId }))
 
   if (err) {
-    console.error(err);
+    console.error('\nError:\n', err);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 

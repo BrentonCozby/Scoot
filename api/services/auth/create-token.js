@@ -21,7 +21,7 @@ async function routeHandler(req, res) {
   let [getAccountErr, account] = await to(getAccountByEmail({ email }))
 
   if (getAccountErr) {
-    console.error(getAccountErr);
+    console.error('\nError:\n', getAccountErr);
     return res.status(500).json({
       message: 'Internal server error.'
     })
@@ -52,7 +52,7 @@ async function routeHandler(req, res) {
       expirationMs: new Date().getTime() + parseInt(process.env.TOKEN_EXPIRATION_MS)
     }
 
-    const token = jwt.sign(tokenPayload, new Buffer(JWT_SECRET, 'base64'))
+    const token = jwt.sign(tokenPayload, new Buffer.from(JWT_SECRET, 'base64'))
 
     res.json({
       accessToken: token,
@@ -60,7 +60,7 @@ async function routeHandler(req, res) {
     })
   })
   .catch(err => {
-    console.error(err);
+    console.error('\nError:\n', err);
     res.status(401).json({
       message: 'Invalid password',
       messageMap: {

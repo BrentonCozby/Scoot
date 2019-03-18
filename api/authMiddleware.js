@@ -10,7 +10,7 @@ async function authMiddleware(req, res, next) {
   const encodedToken = String(req.headers.authorization || '').includes('Bearer ')
     ? req.headers.authorization.split('Bearer ')[1]
     : ''
-  const jwtPayload = jwt.verify(encodedToken, new Buffer(process.env.JWT_SECRET, 'base64'))
+  const jwtPayload = jwt.verify(encodedToken, new Buffer.from(process.env.JWT_SECRET, 'base64'))
 
   const [err, result] = await to(getWhere({
     where: {
@@ -20,7 +20,7 @@ async function authMiddleware(req, res, next) {
   }))
 
   if (err) {
-    console.error(err)
+    console.error('\nError:\n', err)
     return next(err, false)
   }
 

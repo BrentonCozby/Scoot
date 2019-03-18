@@ -20,7 +20,7 @@ async function routeHandler(req, res, next) {
   const [err, result] = await to(queries.createReview({ accountId, scooterId, data }))
 
   if (err) {
-    console.error(err);
+    console.error('\nError:\n', err);
     return res.status(500).json({ message: 'Internal server error.' })
   }
 
