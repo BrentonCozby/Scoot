@@ -56,6 +56,10 @@ class Login extends Component {
       password: document.querySelector('#password').value
     })
     .catch(err => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(err)
+      }
+
       if (err.messageMap) {
         this.setState({
           fields: FormService.setFieldMessages(this.state.fields, err.messageMap, 'error')

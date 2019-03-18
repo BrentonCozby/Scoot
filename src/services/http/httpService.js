@@ -37,8 +37,10 @@ export function baseRequest({
 
     return res.json()
   })
-  .catch(() => {
+  .catch((err) => {
     LoadingService.dequeue([endpoint])
+
+    return Promise.reject(err)
   })
 }
 

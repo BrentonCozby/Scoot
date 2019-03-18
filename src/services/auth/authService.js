@@ -27,8 +27,7 @@ export function login({ email, password }) {
 
 export function logout() {
   clearSession()
-
-  history.redirect('/')
+  history.redirect('/login')
 }
 
 export function getEncodedAccessToken() {

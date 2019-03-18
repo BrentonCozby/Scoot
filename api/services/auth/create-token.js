@@ -29,9 +29,9 @@ async function routeHandler(req, res) {
 
   if (!account){
     res.status(401).json({
-      message: 'Invalid email',
+      message: 'Invalid login',
       messageMap: {
-        email: 'Invalid email'
+        email: 'Invalid login'
       }
     })
 
@@ -60,11 +60,12 @@ async function routeHandler(req, res) {
     })
   })
   .catch(err => {
-    console.error('\nError:\n', err);
-    res.status(401).json({
-      message: 'Invalid password',
+    res
+    .status(401)
+    .json({
+      message: 'Invalid login',
       messageMap: {
-        password: 'Invalid password'
+        password: 'Invalid login'
       }
     })
   })
