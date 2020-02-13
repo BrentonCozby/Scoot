@@ -20,7 +20,7 @@ export function resetFieldValues(fieldsMap) {
   const newFields = {...fieldsMap}
 
   Object.values(newFields).forEach(field => {
-    field.attributes.value = ''
+    field.attributes.value = field.hasOwnProperty('defaultValue') ? field.defaultValue : ''
   })
 
   return newFields
