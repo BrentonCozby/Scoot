@@ -3,43 +3,33 @@ const { authMiddleware } = require('@root/authMiddleware.js')
 const { validateRequiredParams, verifyOneOfRolesMiddleware, to } = require('@utils/index.js')
 const queries = require('./queries/index.js')
 
-async function routeHandler(req, res) {
-  const model = req.body.model
-  const photo = req.body.photo
-  const color = req.body.color
-  const description = req.body.description
-  const lat = req.body.lat
-  const lng = req.body.lng
+async function routeHandler(req, res, next) {
+  const {model, photo, color, description, lat, lng} = req.body
 
-  const validation = validateRequiredParams(['model', 'photo', 'color', 'description', 'lat', 'lng'], req.body)
+  const bodyValidation = validateRequiredParams(['model', 'photo', 'color', 'description', 'lat', 'lng'], req.body)
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  if (!bodyValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      requestBodyErrors: bodyValidation.messageMap
     })
   }
 
-  const [createErr, result] = await to(queries.createScooter({
-    data: { model, photo, color, description, lat, lng }
-  }))
+  const [createErr, result] = await to(queries.create({model, photo, color, description, lat, lng}))
 
   if (createErr) {
-    console.error('\nError:\n', createErr);
-    return res.status(500).json({ message: 'Internal server error.' })
+    return next(createErr)
   }
 
   if (result.rowCount === 0) {
-    return res.status(500).json({ message: 'Scooter not created.' })
+    return next('Scooter not created.')
   }
 
   res.json({ message: 'Scooter created' })
 }
 
-router.post('*',
+module.exports = [
   authMiddleware,
   verifyOneOfRolesMiddleware(['admin', 'manager']),
   routeHandler
-)
-
-module.exports = router
+]

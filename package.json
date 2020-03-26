@@ -23,6 +23,7 @@
     "moment": "^2.24.0",
     "multer": "^1.4.2",
     "pg": "^7.18.2",
+    "qs-stringify": "^1.2.0",
     "rc-time-picker": "^3.7.3",
     "react": "^16.13.1",
     "react-datepicker": "^2.14.1",

@@ -1,66 +1,37 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
-const { verifyOneOfRolesMiddleware, validateRequiredParams, to } = require('@utils/index.js')
+const { verifyOneOfRolesMiddleware, to } = require('@utils/index.js')
 
-async function getAll(req, res) {
-  const [getAllErr, accountList] = await to(queries.getAll({
-    selectFields: req.body.selectFields,
-    orderBy: req.body.orderBy
-  }))
+async function routeHandler(req, res, next) {
+  const {accountId} = req.params
+  const {selectFields, where, orderBy} = req.query
 
-  if (getAllErr) {
-    console.error('\nError:\n', getAllErr);
-    return res.status(500).json({ message: 'Internal server error.' })
+  let conditions = where || null
+
+  if (accountId) {
+    conditions = where || {}
+    conditions.accountId = accountId
   }
 
-  res.json(accountList || [])
-}
-
-async function getWhere(req, res) {
-  const validation = validateRequiredParams(['accountId', 'selectFields'], req.body)
-
-  if (!validation.isValid) {
-    return res.status(409).json({
-      message: 'Missing parameters',
-      messageMap: validation.messageMap
-    })
-  }
-
-  const [getErr, accountList] = await to(queries.getWhere({
-    where: {
-      accountId: req.body.accountId
-    },
-    selectFields: req.body.selectFields,
-    orderBy: req.body.orderBy
+  const [getErr, accountList] = await to(queries.get({
+    selectFields: (selectFields || '').split(','),
+    where: conditions,
+    orderBy
   }))
 
   if (getErr) {
-    console.error('\nError:\n', getErr);
-    return res.status(500).json({ message: 'Internal server error.' })
+    return next(getErr)
   }
 
-  res.json(accountList || [])
+  if (accountList.length === 0) {
+    return res.status(404).json({message: `No account(s) found`})
+  }
+
+  res.json(accountList)
 }
 
-async function routeHandler(req, res) {
-  if (req.body.all) {
-    return getAll(req, res)
-  }
-
-  if (req.body.where) {
-    return getWhere(req, res)
-  }
-
-  res.status(406).json({
-    message: 'Parameters for getting accounts are required',
-    params: 'all (boolean), where (map)'
-  })
-}
-
-router.post('*',
+module.exports = [
   authMiddleware,
   verifyOneOfRolesMiddleware(['admin', 'manager']),
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

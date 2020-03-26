@@ -3,7 +3,7 @@ const { query } = require('../../../../database/index.js')
 const { sanitize, camelCaseMapKeys, decamelizeList, to } = require('@utils/index.js')
 const decamelize = require('decamelize')
 
-const READABLE_ACCOUNT_COLUMNS = [
+const READABLE_ACCOUNT_FIELDS = [
   'email',
   'first_name',
   'last_name',
@@ -11,56 +11,53 @@ const READABLE_ACCOUNT_COLUMNS = [
   'roles'
 ]
 
-const EDITABLE_ACCOUNT_COLUMNS = [
+const EDITABLE_ACCOUNT_FIELDS = [
   'email',
   'first_name',
   'last_name',
   'roles'
 ]
 
-async function getAll({ selectFields = [], orderBy }) {
-  let columns = ['account_id']
-
-  if (selectFields[0] === '*') {
-    columns = READABLE_ACCOUNT_COLUMNS
-  } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_ACCOUNT_COLUMNS.includes(field)))
-  }
-
-  let queryString = `SELECT ${columns.join(', ')} FROM Account`
-
-  if (orderBy) {
-    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([column, direction]) => {
-      return `${decamelize(column)} ${direction.toUpperCase()}`
-    }).join(', ')
-  }
-
-  const [err, result] = await to(query(queryString))
-
-  if (err) {
-    return Promise.reject(err)
-  }
-
-  return result.rows.map(row => camelCaseMapKeys(row))
+const dataTypeMap = {
+  accountId: 'number',
+  email: 'string',
+  firstName: 'string',
+  lastName: 'string',
+  roles: 'string'
 }
 
-async function getWhere({ where, selectFields = [], orderBy }) {
+async function get({
+  selectFields = [],
+  where,
+  orderBy
+}) {
   let columns = ['account_id']
 
-  if (selectFields[0] === '*') {
-    columns = READABLE_ACCOUNT_COLUMNS
+  if (selectFields[0] === '*' || selectFields.length === 0) {
+    columns = READABLE_ACCOUNT_FIELDS
   } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_ACCOUNT_COLUMNS.includes(field)))
+    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_ACCOUNT_FIELDS.includes(field)))
   }
 
   let queryString = `SELECT ${columns.join(', ')} FROM Account`
 
   let placeholderCounter = 1
-  let conditions = Object.keys(where).map(columnName => {
-    return `account.${decamelize(columnName)}=$${placeholderCounter++}`
+  let conditions = []
+  Object.entries(where || {}).forEach(([field, value]) => {
+    if (['string', 'number', 'boolean'].indexOf(typeof value) === -1) {
+      return
+    }
+
+    const operator = dataTypeMap[field] === 'string' ? 'ILIKE' : '='
+
+    if (READABLE_ACCOUNT_FIELDS.includes(decamelize(field))) {
+      conditions.push(`account.${decamelize(field)} ${operator} $${placeholderCounter++}`)
+    }
   })
 
-  queryString += ` WHERE ${conditions.filter(v => Boolean(v)).join(' AND ')}`
+  if (conditions.length) {
+    queryString += ` WHERE ${conditions.filter(v => Boolean(v)).join(' AND ')}`
+  }
 
   if (orderBy) {
     queryString += ' ORDER BY ' + Object.entries(orderBy).map(([column, direction]) => {
@@ -68,8 +65,9 @@ async function getWhere({ where, selectFields = [], orderBy }) {
     }).join(', ')
   }
 
-  const queryData = Object.values(where).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
+  const queryData = Object.values(where || {}).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
 
+  console.log(queryString)
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
@@ -79,7 +77,13 @@ async function getWhere({ where, selectFields = [], orderBy }) {
   return result.rows.map(camelCaseMapKeys)
 }
 
-async function createAccount({ email, password, firstName, lastName, roles }) {
+async function create({
+  email,
+  password,
+  firstName,
+  lastName,
+  roles
+}) {
   const passwordHash = bcrypt.hashSync(password, 10)
 
   const queryString = 'INSERT INTO Account(email, first_name, last_name, roles, password_hash) VALUES($1, $2, $3, $4, $5) RETURNING *'
@@ -94,17 +98,24 @@ async function createAccount({ email, password, firstName, lastName, roles }) {
   return result.rows.map(camelCaseMapKeys)
 }
 
-async function updateAccount({ accountId, updateMap }) {
+async function update({
+  accountId,
+  email,
+  firstName,
+  lastName,
+  roles
+}) {
   const set = []
   const queryData = [parseInt(accountId)]
+  const fieldsMap = {email, firstName, lastName, roles}
   let placeholderCounter = queryData.length + 1
 
-  Object.entries(updateMap).forEach(([key, value]) => {
-    if (EDITABLE_ACCOUNT_COLUMNS.indexOf(decamelize(key)) === -1) {
+  Object.entries(fieldsMap).forEach(([field, value]) => {
+    if (EDITABLE_ACCOUNT_FIELDS.indexOf(decamelize(field)) === -1) {
       return
     }
 
-    set.push(`${decamelize(key)}=$${placeholderCounter++}`)
+    set.push(`${decamelize(field)}=$${placeholderCounter++}`)
 
     queryData.push(value);
   })
@@ -120,7 +131,10 @@ async function updateAccount({ accountId, updateMap }) {
   return result.rows.map(camelCaseMapKeys)
 }
 
-async function updateAccountPassword({ accountId, newPassword }) {
+async function updatePassword({
+  accountId,
+  newPassword
+}) {
   const [err, passwordHash] = await to(bcrypt.hash(newPassword, 10))
 
   if (err) {
@@ -133,16 +147,15 @@ async function updateAccountPassword({ accountId, newPassword }) {
   return query(queryString, queryData)
 }
 
-function deleteAccount({ accountId }) {
+function remove({ accountId }) {
   const queryString = 'DELETE FROM Account WHERE account_id=$1 RETURNING *'
   const queryData = [parseInt(accountId)]
 
   return query(queryString, queryData)
 }
 
-module.exports.getAll = getAll
-module.exports.getWhere = getWhere
-module.exports.createAccount = createAccount
-module.exports.updateAccount = updateAccount
-module.exports.updateAccountPassword = updateAccountPassword
-module.exports.deleteAccount = deleteAccount
+module.exports.get = get
+module.exports.create = create
+module.exports.update = update
+module.exports.updatePassword = updatePassword
+module.exports.remove = remove

@@ -4,20 +4,17 @@ const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
   const {reservationId} = req.params
-  const {updateMap} = req.body
 
   const pathValidation = validateRequiredParams(['reservationId'], req.params)
-  const bodyValidation = validateRequiredParams(['updateMap'], req.body)
 
-  if (!pathValidation.isValid || !bodyValidation.isValid) {
+  if (!pathValidation.isValid) {
     return res.status(400).json({
       message: 'Missing parameters',
-      pathParamsErrors: pathValidation.messageMap,
-      requestBodyErrors: bodyValidation.messageMap
+      pathParamsErrors: pathValidation.messageMap
     })
   }
 
-  const [getErr, reservations] = await to(queries.get({
+  let [getErr, reservations] = await to(queries.get({
     where: {
       reservationId
     }
@@ -28,17 +25,13 @@ async function routeHandler(req, res, next) {
   }
 
   if (!reservations[0]) {
-    return res.status(404).json({
-      message: `Could not find reservation with reservationId: ${reservationId}`,
-      pathParamsErrors: {
-        reservationId: 'Not found'
-      }
+    return res.status(204).json({
+      message: `Reservation deleted with reservationId: ${reservationId}`
     })
   }
 
   let isAuthorizedByRole = true
-
-  if (accountId !== req.user.accountId) {
+  if (reservation[0].accountId !== req.user.accountId) {
     const rolesList = (req.user.roles || '').split(' ')
 
     isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
@@ -48,13 +41,15 @@ async function routeHandler(req, res, next) {
     return res.status(403).json({ message: 'Forbidden by role', roles: req.user.roles })
   }
 
-  const [updateErr] = await to(queries.update({reservationId, updateMap}))
+  const [deleteErr] = await to(queries.remove({reservationId}))
 
-  if (updateErr) {
-    return next(updateErr)
+  if (deleteErr) {
+    return next(deleteErr)
   }
 
-  res.json({ message: `Reservation updated with reservationId: ${reservationId}` })
+  res.status(204).json({
+    message: `Reservation deleted with reservationId: ${reservationId}`
+  })
 }
 
 module.exports = [

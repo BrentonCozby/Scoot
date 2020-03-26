@@ -1,39 +1,37 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
-const { validateRequiredParams, to } = require('@utils/index.js')
+const { to } = require('@utils/index.js')
 
-async function getWhere(req, res) {
-  const validation = validateRequiredParams(['selectFields'], req.body)
+async function routeHandler(req, res, next) {
+  const {scooterId} = req.params
+  const {selectFields, where, orderBy, distanceFrom} = req.query
 
-  if (!validation.isValid) {
-    return res.status(409).json({
-      message: 'Missing parameters',
-      messageMap: validation.messageMap
-    })
+  let conditions = where || null
+
+  if (scooterId) {
+    conditions = where || {}
+    conditions.scooterId = scooterId
   }
 
-  const [getScootersErr, scooterList] = await to(queries.getWhere({
-    where: req.body.where,
-    selectFields: req.body.selectFields,
-    orderBy: req.body.orderBy,
-    distanceFrom: req.body.distanceFrom
+  const [getErr, scooterList] = await to(queries.get({
+    selectFields: (selectFields || '').split(','),
+    where: conditions,
+    orderBy,
+    distanceFrom: (distanceFrom || '').split(',')
   }))
 
-  if (getScootersErr) {
-    console.error('\nError:\n', getScootersErr);
-    return res.status(500).json({ message: 'Internal server error.' })
+  if (getErr) {
+    return next(getErr)
   }
 
-  res.json(scooterList || [])
+  if (scooterList.length === 0) {
+    return res.status(404).json({message: `No scooter(s) found`})
+  }
+
+  res.json(scooterList)
 }
 
-async function routeHandler(req, res) {
-  return getWhere(req, res)
-}
-
-router.post('*',
+module.exports = [
   authMiddleware,
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

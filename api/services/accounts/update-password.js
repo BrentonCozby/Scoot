@@ -1,21 +1,25 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
 const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.js')
 
-async function routeHandler(req, res) {
-  const validation = validateRequiredParams(['accountId', 'newPassword'], req.body)
+async function routeHandler(req, res, next) {
+  const {accountId} = req.params
+  const {newPassword} = req.query
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  const pathValidation = validateRequiredParams(['accountId'], req.params)
+  const queryValidation = validateRequiredParams(['newPassword'], req.query)
+
+  if (!pathValidation.isValid || !queryValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      pathParamsErrors: pathValidation.messageMap,
+      queryParamsErrors: queryValidation.messageMap
     })
   }
 
   let isAuthorizedByRole = true
 
-  if (req.body.accountId !== req.user.accountId) {
+  if (accountId !== req.user.accountId) {
     const rolesList = (req.user.roles || '').split(' ')
 
     isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
@@ -28,25 +32,20 @@ async function routeHandler(req, res) {
     })
   }
 
-  const [err, result] = await to(queries.updateAccountPassword({
-    accountId: req.body.accountId,
-    newPassword: req.body.newPassword
-  }))
+  const [updateErr, result] = await to(queries.updateAccountPassword({accountId, newPassword}))
 
-  if (err) {
-    console.error('\nError:\n', err);
-    return res.status(500).json({ message: 'Internal server error.' })
+  if (updateErr) {
+    return next(updateErr)
   }
 
   if (result.rowCount === 0) {
-    return res.status(500).json({ message: 'Password not updated.' })
+    return next('Password not updated.')
   }
 
-  res.json({ message: `Password updated for accountId: ${req.body.accountId}` })
+  res.json({ message: `Password updated for accountId: ${accountId}` })
 }
 
-router.put('*',
+module.exports = [
   authMiddleware,
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

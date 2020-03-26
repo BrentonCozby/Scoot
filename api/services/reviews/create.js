@@ -1,38 +1,33 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const { validateRequiredParams, to } = require('@utils/index.js')
 const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
-  const accountId = req.body.accountId
-  const scooterId = req.body.scooterId
-  const data = req.body.data
+  const {accountId, scooterId, rating, text} = req.body.accountId
 
-  const validation = validateRequiredParams(['accountId', 'scooterId', 'data'], req.body)
+  const bodyValidation = validateRequiredParams(['accountId', 'scooterId', 'rating', 'text'], req.body)
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  if (!bodyValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      requestBodyErrors: bodyValidation.messageMap
     })
   }
 
-  const [err, result] = await to(queries.createReview({ accountId, scooterId, data }))
+  const [createErr, result] = await to(queries.createReview({ accountId, scooterId, rating, text }))
 
-  if (err) {
-    console.error('\nError:\n', err);
-    return res.status(500).json({ message: 'Internal server error.' })
+  if (createErr) {
+    return next(createErr)
   }
 
   if (result.rowCount === 0) {
-    return res.status(500).json({ message: 'Review not created.' })
+    return next('Review not created.')
   }
 
   res.json({ message: 'Review created' })
 }
 
-router.post('*',
+module.exports = [
   authMiddleware,
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

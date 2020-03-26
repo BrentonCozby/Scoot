@@ -1,13 +1,10 @@
 function notFound(req, res, next) {
-  const err = new Error('Not Found')
-  err.status = 404
-  next(err)
+  res.status(404).send('Not found')
 }
 
-
 function production(err, req, res, next) {
-  res.status(err.status || 500)
-  res.json({message: err.message})
+  console.error('\nError:\n', err)
+  res.status(500).send({message: 'Internal server error'})
 }
 
 process.on('unhandledRejection', (reason, p) => {
@@ -17,7 +14,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 process.on('uncaughtException', (error) => {
   // I just received an error that was never handled, time to handle it and then decide whether a restart is needed
-  production(error || {status: 500, message: JSON.stringify(message)})
+  console.error('\nError:\n', err)
 });
 
 module.exports.notFound = notFound

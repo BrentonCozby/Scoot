@@ -20,7 +20,7 @@ function verifyAllRolesMiddleware(rolesToVerify) {
 
     return allRolesFound
       ? Promise.resolve('next')
-      : res.status(401).json({ message: 'One or more required account roles are missing.' })
+      : res.status(403).json({ message: 'Forbidden by roles' })
   }
 }
 
@@ -36,7 +36,7 @@ function verifyOneOfRolesMiddleware(rolesToVerify) {
 
     return oneOfRolesFound
       ? Promise.resolve('next')
-      : res.status(401).json({ message: 'Required account role not found.' })
+      : res.status(403).json({ message: 'Forbidden by role' })
   }
 }
 

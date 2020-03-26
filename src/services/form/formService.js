@@ -47,12 +47,12 @@ export function resetFieldValuesAndMessages(fieldsMap) {
   return newFields
 }
 
-export function setFieldMessages(fieldsMap, messageMap, type) {
+export function setFieldMessages(fieldsMap, requestBodyErrors, type) {
   return Object.keys(fieldsMap).reduce((newFieldsMap, fieldId) => {
     newFieldsMap[fieldId] = {...fieldsMap[fieldId]}
 
-    if (messageMap.hasOwnProperty(fieldId)) {
-      newFieldsMap[fieldId].message = {type: type, text: messageMap[fieldId]}
+    if (requestBodyErrors.hasOwnProperty(fieldId)) {
+      newFieldsMap[fieldId].message = {type: type, text: requestBodyErrors[fieldId]}
     } else {
       newFieldsMap[fieldId].message = null
     }

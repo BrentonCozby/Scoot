@@ -3,21 +3,19 @@ const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.j
 const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
+  let isAuthorizedByRole = true
   const {reviewId} = req.params
-  const {updateMap} = req.body
 
   const pathValidation = validateRequiredParams(['reviewId'], req.params)
-  const bodyValidation = validateRequiredParams(['updateMap'], req.body)
 
-  if (!pathValidation.isValid || !bodyValidation.isValid) {
+  if (!pathValidation.isValid) {
     return res.status(400).json({
       message: 'Missing parameters',
-      pathParamsErrors: pathValidation.messageMap,
-      requestBodyErrors: bodyValidation.messageMap
+      pathParamsErrors: pathValidation.messageMap
     })
   }
 
-  const [getErr, reviews] = await to(queries.get({
+  let [getErr, reviews] = await to(queries.get({
     where: {
       reviewId
     }
@@ -28,17 +26,12 @@ async function routeHandler(req, res, next) {
   }
 
   if (!reviews[0]) {
-    return res.status(404).json({
-      message: `Could not find review with reviewId: ${reviewId}`,
-      pathParamsErrors: {
-        reviewId: 'Not found'
-      }
+    return res.status(204).json({
+      message: `Review deleted with reviewId: ${reviewId}`
     })
   }
 
-  let isAuthorizedByRole = true
-
-  if (review.accountId !== req.user.accountId) {
+  if (review[0].accountId !== req.user.accountId) {
     const rolesList = (req.user.roles || '').split(' ')
 
     isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
@@ -48,13 +41,15 @@ async function routeHandler(req, res, next) {
     return res.status(403).json({ message: 'Forbidden by role', roles: req.user.roles })
   }
 
-  const [updateErr] = await to(queries.updateReview({reviewId, updateMap}))
+  const [deleteErr] = await to(queries.remove({reviewId}))
 
-  if (updateErr) {
-    return next(updateErr)
+  if (deleteErr) {
+    return next(deleteErr)
   }
 
-  res.json({ message: `Review updated with reviewId: ${reviewId}` })
+  res.status(204).json({
+    message: `Review deleted with reviewId: ${reviewId}`
+  })
 }
 
 module.exports = [

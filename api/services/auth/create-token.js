@@ -1,76 +1,56 @@
-const router = require('express-promise-router')()
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const { getAccountByEmail } = require('./queries/index.js')
 const { validateRequiredParams, to } = require('@utils/index.js')
 const { JWT_SECRET } = require('../../authMiddleware.js')
 
-async function routeHandler(req, res) {
-  const email = req.body.email
-  const password = req.body.password
+async function routeHandler(req, res, next) {
+  const {email, password} = req.query
 
-  const validation = validateRequiredParams(['email', 'password'], req.body)
+  const queryValidation = validateRequiredParams(['email', 'password'], req.query)
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  if (!queryValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      queryParamsErrors: queryValidation.messageMap
     })
   }
 
   let [getAccountErr, account] = await to(getAccountByEmail({ email }))
 
   if (getAccountErr) {
-    console.error('\nError:\n', getAccountErr);
-    return res.status(500).json({
-      message: 'Internal server error.'
-    })
+    return next(getAccountErr)
   }
 
-  if (!account){
-    res.status(401).json({
+  const [bcryptErr, isMatch] = await to(bcrypt.compare(password, account.passwordHash))
+
+  if (bcryptErr) {
+    return next(bcryptErr)
+  }
+
+  if (!account || !isMatch) {
+    return res.status(401).json({
       message: 'Invalid login',
-      messageMap: {
+      requestBodyErrors: {
         email: 'Invalid login'
       }
     })
-
-    return
   }
 
-  bcrypt.compare(password, account.passwordHash)
-  .then(isMatch => {
-    if (!isMatch) {
-      return Promise.reject()
-    }
+  const tokenPayload = {
+    accountId: account.accountId,
+    firstName: account.firstName,
+    lastName: account.lastName,
+    roles: account.roles,
+    expirationMs: new Date().getTime() + parseInt(process.env.TOKEN_EXPIRATION_MS)
+  }
 
-    const tokenPayload = {
-      accountId: account.accountId,
-      firstName: account.firstName,
-      lastName: account.lastName,
-      roles: account.roles,
-      expirationMs: new Date().getTime() + parseInt(process.env.TOKEN_EXPIRATION_MS)
-    }
+  const token = jwt.sign(tokenPayload, new Buffer.from(JWT_SECRET, 'base64'))
 
-    const token = jwt.sign(tokenPayload, new Buffer.from(JWT_SECRET, 'base64'))
-
-    res.json({
-      accessToken: token,
-      message: 'Token created'
-    })
-  })
-  .catch(err => {
-    res
-    .status(401)
-    .json({
-      message: 'Invalid login',
-      messageMap: {
-        password: 'Invalid login'
-      }
-    })
+  res.json({
+    accessToken: token,
+    message: 'Token created'
   })
 }
 
-router.post('*', routeHandler)
-
-module.exports = router
+module.exports = [routeHandler]

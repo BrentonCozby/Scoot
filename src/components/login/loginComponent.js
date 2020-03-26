@@ -60,9 +60,9 @@ class Login extends Component {
         console.error(err)
       }
 
-      if (err.messageMap) {
+      if (err.requestBodyErrors) {
         this.setState({
-          fields: FormService.setFieldMessages(this.state.fields, err.messageMap, 'error')
+          fields: FormService.setFieldMessages(this.state.fields, err.requestBodyErrors, 'error')
         })
       } else {
         this.setState({ formError: err.message || err })

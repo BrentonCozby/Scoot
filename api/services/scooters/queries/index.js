@@ -2,7 +2,7 @@ const { query } = require('../../../../database/index.js')
 const { sanitize, camelCaseMapKeys, decamelizeList, to } = require('@utils/index.js')
 const decamelize = require('decamelize')
 
-const READABLE_SCOOTER_COLUMNS = [
+const READABLE_SCOOTER_FIELDS = [
   'scooter_id',
   'model',
   'photo',
@@ -11,7 +11,7 @@ const READABLE_SCOOTER_COLUMNS = [
   'geom'
 ]
 
-const EDITABLE_SCOOTER_COLUMNS = [
+const EDITABLE_SCOOTER_FIELDS = [
   'model',
   'photo',
   'color',
@@ -20,80 +20,116 @@ const EDITABLE_SCOOTER_COLUMNS = [
   'lng'
 ]
 
-const READABLE_REVIEW_COLUMNS = [
+const READABLE_REVIEW_FIELDS = [
   'avg_rating'
 ]
 
-const READABLE_RESERVATION_COLUMNS = [
+const READABLE_RESERVATION_FIELDS = [
   'start_date',
   'end_date'
 ]
 
-async function getWhere({ where = {}, selectFields, orderBy, distanceFrom }) {
-  const READABLE_COLUMNS = [...READABLE_SCOOTER_COLUMNS, ...READABLE_REVIEW_COLUMNS, ...READABLE_RESERVATION_COLUMNS]
+const dataTypeMap = {
+  scooterId: 'number',
+  model: 'string',
+  photo: 'string',
+  color: 'string',
+  description: 'string',
+  avgRating: 'number',
+  startDate: 'number',
+  endDate: 'number'
+}
 
-  let columns = ['scooter_id']
+async function get({
+  selectFields,
+  where,
+  orderBy,
+  distanceFrom
+}) {
+  const READABLE_FIELDS = [...READABLE_SCOOTER_FIELDS, ...READABLE_REVIEW_FIELDS, ...READABLE_RESERVATION_FIELDS]
 
-  if (selectFields[0] === '*') {
-    columns = READABLE_COLUMNS
+  let fields = ['scooter_id']
+
+  if (selectFields[0] === '*' || selectFields.length === 0) {
+    fields = READABLE_FIELDS
   } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_COLUMNS.includes(field)))
+    fields = fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field)))
   }
 
-  const joinsReviewTable = columns.some(field => READABLE_REVIEW_COLUMNS.includes(field)) || Object.keys(where).some(field => READABLE_REVIEW_COLUMNS.includes(field))
-  const joinsReservationTable = columns.some(field => READABLE_RESERVATION_COLUMNS.includes(field)) || Object.keys(where).some(field => READABLE_RESERVATION_COLUMNS.includes(field))
+  const joinsReviewTable =
+    fields.some(field => READABLE_REVIEW_FIELDS.includes(field)) ||
+    Object.keys(where || {}).some(field => READABLE_REVIEW_FIELDS.includes(field))
 
-  columns = columns.map(column => {
-    if (READABLE_REVIEW_COLUMNS.includes(column)) {
-      if (column === 'avg_rating') {
+  const joinsReservationTable =
+    fields.some(field => READABLE_RESERVATION_FIELDS.includes(field)) ||
+    Object.keys(where || {}).some(field => READABLE_RESERVATION_FIELDS.includes(field))
+
+  fields = fields.map(field => {
+    if (READABLE_REVIEW_FIELDS.includes(field)) {
+      if (field === 'avg_rating') {
         return `AVG(review.rating) as avg_rating, COUNT(review.rating) as review_count`
       }
 
-      return `review.${column}`
+      return `review.${field}`
     }
 
-    if (READABLE_RESERVATION_COLUMNS.includes(column)) {
-      return `reservation.${column}`
+    if (READABLE_RESERVATION_FIELDS.includes(field)) {
+      return `reservation.${field}`
     }
 
-    if (column === 'geom') {
-      let str =  'ST_AsText(scooter.geom) as geom'
-
-      return str
+    if (field === 'geom') {
+      return 'ST_AsText(scooter.geom) as geom'
     }
 
-    return `scooter.${column}`
+    return `scooter.${field}`
   })
 
-  if (distanceFrom) {
-    columns.push(`ST_Distance(scooter.geom, ST_GeomFromText('POINT(${distanceFrom.lng} ${distanceFrom.lat})', 26910)) as distance`)
+  const [lng, lat] = distanceFrom
+  if (lng && lat) {
+    fields.push(`ST_Distance(scooter.geom, ST_GeomFromText('POINT(${lng} ${lat})', 26910)) as distance`)
   }
 
-  let queryString = `SELECT ${columns.join(', ')} FROM Scooter`
+  let queryString = `SELECT ${fields.join(', ')} FROM Scooter`
 
   if (joinsReviewTable) {
-    queryString += ' LEFT JOIN review ON scooter.scooter_id = review.scooter_id'
+    queryString += ` ${where ? 'INNER' : 'LEFT'} JOIN review ON scooter.scooter_id = review.scooter_id`
   }
 
   if (joinsReservationTable) {
-    queryString += ' LEFT JOIN reservation ON scooter.scooter_id = reservation.scooter_id'
+    queryString += ` ${where ? 'INNER' : 'LEFT'} JOIN reservation ON scooter.scooter_id = reservation.scooter_id`
   }
 
   let placeholderCounter = 1
-  let conditions = Object.keys(where).map(columnName => {
-    if (READABLE_COLUMNS.includes(decamelize(columnName))) {
-      return `scooter.${decamelize(columnName)}=$${placeholderCounter++}`
+  let conditions = []
+  Object.entries(where || {}).forEach(([field, value]) => {
+    if (['string', 'number', 'boolean'].indexOf(typeof value) === -1) {
+      return
     }
-  }).filter(v => Boolean(v))
 
-  if (where.hasOwnProperty('bounds')) {
-    conditions.push(`scooter.geom && ST_MakeEnvelope(${where.bounds.xmin}, ${where.bounds.ymin}, ${where.bounds.xmax}, ${where.bounds.ymax}, 26910)`)
+    const operator = dataTypeMap[field] === 'string' ? 'ILIKE' : '='
+
+    if (READABLE_SCOOTER_FIELDS.includes(decamelize(field))) {
+      conditions.push(`scooter.${decamelize(field)} ${operator} $${placeholderCounter++}`)
+    }
+
+    if (READABLE_REVIEW_FIELDS.includes(decamelize(field))) {
+      conditions.push(`review.${decamelize(field)} ${operator} $${placeholderCounter++}`)
+    }
+
+    if (READABLE_RESERVATION_FIELDS.includes(decamelize(field))) {
+      conditions.push(`reservation.${decamelize(field)} ${operator} $${placeholderCounter++}`)
+    }
+  })
+
+  const [xmin, xmax, ymin, ymax] = where.bounds.split(',')
+  if (xmin && xmax && ymin && ymax) {
+    conditions.push(`scooter.geom && ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 26910)`)
   }
 
   if (conditions.length) {
     queryString += ` WHERE ${conditions.join(' AND ')}`
 
-    if (where.reservedBetween) {
+    if (where.reservedBetween.min && where.reservedBetween.max) {
       queryString += `
         AND scooter.scooter_id IN (
           SELECT reservation.scooter_id
@@ -104,7 +140,7 @@ async function getWhere({ where = {}, selectFields, orderBy, distanceFrom }) {
           )
         )
       `
-    } else if (where.availableBetween) {
+    } else if (where.availableBetween.min && where.availableBetween.max) {
       queryString += `
         AND scooter.scooter_id NOT IN (
           SELECT reservation.scooter_id
@@ -129,12 +165,12 @@ async function getWhere({ where = {}, selectFields, orderBy, distanceFrom }) {
   }
 
   if (orderBy) {
-    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([column, direction]) => {
-      return `${decamelize(column)} ${direction.toUpperCase()}`
+    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([field, direction]) => {
+      return `${decamelize(field)} ${direction.toUpperCase()}`
     }).join(', ')
   }
 
-  const queryData = Object.values(where).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
+  const queryData = Object.values(where || {}).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
 
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
@@ -145,51 +181,41 @@ async function getWhere({ where = {}, selectFields, orderBy, distanceFrom }) {
   return result.rows.map(camelCaseMapKeys)
 }
 
-function createScooter({ data }) {
-  let columns = []
-  const values = []
-  const queryData = []
-  let placeholderCounter = values.length + 1
+function create({
+  model,
+  photo,
+  color,
+  description,
+  lat,
+  lng
+}) {
+  let fields = ['model', 'photo', 'color', 'description', 'geom']
+  const values = ['$1', '$2', '$3', '$4', '$5', `ST_GeomFromText('POINT(${lng} ${lat})', 26910)`]
+  const queryData = [model, photo, color, description, lat, lng]
 
-  Object.entries(data).forEach(([column, value]) => {
-    if (EDITABLE_SCOOTER_COLUMNS.indexOf(decamelize(column)) === -1) {
-      return
-    }
-
-    if (['lat', 'lng'].indexOf(column) >= 0) {
-      return
-    }
-
-    columns.push(decamelize(column))
-    values.push(`$${placeholderCounter++}`)
-    queryData.push(value)
-  })
-
-  if (typeof data.lat === 'number' && typeof data.lng === 'number') {
-    columns.push('geom')
-    values.push(`ST_GeomFromText('POINT(${data.lng} ${data.lat})', 26910)`)
-  }
-
-  const queryString = `INSERT INTO scooter(${columns.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
+  const queryString = `INSERT INTO scooter(${fields.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
 
   return query(queryString, sanitize(queryData))
 }
 
-function updateScooter({ scooterId, updateMap }) {
+function update({
+  scooterId,
+  updateMap
+}) {
   const set = []
   const queryData = [parseInt(scooterId)]
+
   let placeholderCounter = queryData.length + 1
-
-  Object.entries(updateMap).forEach(([column, value]) => {
-    if (EDITABLE_SCOOTER_COLUMNS.indexOf(decamelize(column)) === -1) {
+  Object.entries(updateMap).forEach(([field, value]) => {
+    if (EDITABLE_SCOOTER_FIELDS.indexOf(decamelize(field)) === -1) {
       return
     }
 
-    if (['lat', 'lng'].indexOf(column) >= 0) {
+    if (['lat', 'lng'].indexOf(field) >= 0) {
       return
     }
 
-    set.push(`${decamelize(column)}=$${placeholderCounter++}`)
+    set.push(`${decamelize(field)}=$${placeholderCounter++}`)
 
     queryData.push(value)
   })
@@ -203,14 +229,14 @@ function updateScooter({ scooterId, updateMap }) {
   return query(queryString, sanitize(queryData))
 }
 
-function deleteScooter({ scooterId }) {
+function remove({ scooterId }) {
   const queryString = 'DELETE FROM Scooter WHERE scooter_id=$1 RETURNING *'
   const queryData = [parseInt(scooterId)]
 
   return query(queryString, queryData)
 }
 
-module.exports.getWhere = getWhere
-module.exports.createScooter = createScooter
-module.exports.updateScooter = updateScooter
-module.exports.deleteScooter = deleteScooter
+module.exports.get = get
+module.exports.create = create
+module.exports.update = update
+module.exports.remove = remove

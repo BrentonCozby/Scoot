@@ -1,67 +1,43 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
-const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.js')
+const { verifyOneOfRoles, to } = require('@utils/index.js')
 
-async function getAll(req, res, next) {
+async function routeHandler(req, res, next) {
+  const {reviewId} = req.params
+  const {selectFields, where, orderBy} = req.query
   const rolesList = (req.user.roles || '').split(' ')
 
   const isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
 
-  if (!isAuthorizedByRole) {
-    return res.status(403).json({ message: 'Invalid account roles', roles: req.user.roles })
+  if (!reviewId && !isAuthorizedByRole) {
+    return res.status(403).json({ message: 'Forbidden by role', roles: req.user.roles })
   }
 
-  const [err, reviewList] = await to(queries.getAll({ selectFields: req.body.selectFields }))
+  let conditions = where || null
 
-  if (err) {
-    console.error('\nError:\n', err);
-    return res.status(500).json({ message: 'Internal server error.' })
+  if (reviewId) {
+    conditions = where || {}
+    conditions.reviewId = reviewId
   }
 
-  res.json(reviewList || [])
-}
-
-async function getWhere(req, res, next) {
-  const validation = validateRequiredParams(['where'], req.body)
-
-  if (!validation.isValid) {
-    return res.status(409).json({
-      message: 'Missing parameters',
-      messageMap: validation.messageMap
-    })
-  }
-
-  const [err, reviewList] = await to(queries.getWhere({
-    where: req.body.where,
-    selectFields: req.body.selectFields
+  const [getErr, reviewList] = await to(queries.get({
+    selectFields: (selectFields || '').split(','),
+    where: conditions,
+    orderBy
   }))
 
-  if (err) {
-    console.error('\nError:\n', err);
-    return res.status(500).json({ message: 'Internal server error.' })
+  if (getErr) {
+    return next (getErr)
   }
 
-  res.json(reviewList || [])
+  if (reviewList.length === 0) {
+    return res.status(404).json({message: `No review(s) found`})
+  }
+
+  res.json(reviewList)
 }
 
-async function routeHandler(req, res, next) {
-  if (req.body.all) {
-    return getAll(req, res, next)
-  }
-
-  if (req.body.where) {
-    return getWhere(req, res, next)
-  }
-
-  res.status(406).json({
-    message: 'Parameters for getting reviews are required',
-    params: 'all (boolean), where (map)'
-  })
-}
-
-router.post('*',
+module.exports = [
   authMiddleware,
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

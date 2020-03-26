@@ -22,11 +22,11 @@ describe('FormService', () => {
         bar: {type: 'radio'}
       }
 
-      const messageMap = {
+      const requestBodyErrors = {
         bar: 'bar error'
       }
 
-      expect(FormService.setFieldMessages(fields, messageMap, 'error')).toEqual({
+      expect(FormService.setFieldMessages(fields, requestBodyErrors, 'error')).toEqual({
         foo: {message: null},
         bar: {type: 'radio', message: {type: 'error', text: 'bar error'}}
       })

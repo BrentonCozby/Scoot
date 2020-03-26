@@ -2,7 +2,7 @@ const { query } = require('../../../../database/index.js')
 const { sanitize, camelCaseMapKeys, decamelizeList, to } = require('@utils/index.js')
 const decamelize = require('decamelize')
 
-const READABLE_REVIEW_COLUMNS = [
+const READABLE_REVIEW_FIELDS = [
   'review_id',
   'account_id',
   'scooter_id',
@@ -11,101 +11,81 @@ const READABLE_REVIEW_COLUMNS = [
   'date'
 ]
 
-const EDITABLE_REVIEW_COLUMNS = [
+const EDITABLE_REVIEW_FIELDS = [
   'rating',
   'text'
 ]
 
-const READABLE_ACCOUNT_COLUMNS = [
+const READABLE_ACCOUNT_FIELDS = [
   'first_name',
   'last_name',
   'email',
   'roles'
 ]
 
-const READABLE_SCOOTER_COLUMNS = [
+const READABLE_SCOOTER_FIELDS = [
   'model',
   'photo',
   'color',
-  'description'
+  'description',
+  'geom'
 ]
 
-async function getAll({ selectFields = [] }) {
-  const READABLE_COLUMNS = [...READABLE_REVIEW_COLUMNS, ...READABLE_ACCOUNT_COLUMNS, ...READABLE_SCOOTER_COLUMNS]
-
-  let columns = ['account_id', 'scooter_id']
-
-  if (selectFields[0] === '*') {
-    columns = READABLE_COLUMNS
-  } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_COLUMNS.includes(field)))
-  }
-
-  const joinsAccountTable = columns.some(field => READABLE_ACCOUNT_COLUMNS.includes(field))
-  const joinsScooterTable = columns.some(field => READABLE_SCOOTER_COLUMNS.includes(field))
-
-  columns = columns.map(column => {
-    if (READABLE_ACCOUNT_COLUMNS.includes(column)) {
-      return `account.${column}`
-    }
-
-    if (READABLE_SCOOTER_COLUMNS.includes(column)) {
-      return `scooter.${column}`
-    }
-
-    return `review.${column}`
-  })
-
-  let queryString = `SELECT ${columns.join(', ')} FROM Review`
-
-  if (joinsAccountTable) {
-    queryString += ' INNER JOIN account ON review.account_id = account.account_id'
-  }
-
-  if (joinsScooterTable) {
-    queryString += ' INNER JOIN scooter ON review.scooter_id = scooter.scooter_id'
-  }
-
-  if (columns.includes('date') && columns.includes('time')) {
-    queryString += ' ORDER BY date DESC, time DESC'
-  }
-
-  const [err, result] = await to(query(queryString))
-
-  if (err) {
-    return Promise.reject(err)
-  }
-
-  return result.rows.map(row => camelCaseMapKeys(row))
+const dataTypeMap = {
+  reviewId: 'number',
+  accountId: 'number',
+  scooterId: 'number',
+  rating: 'number',
+  text: 'string',
+  firstName: 'string',
+  lastName: 'string',
+  email: 'string',
+  roles: 'string',
+  model: 'string',
+  photo: 'string',
+  color: 'string',
+  description: 'string'
 }
 
-async function getWhere({ where, selectFields = [] }) {
-  const READABLE_COLUMNS = [...READABLE_REVIEW_COLUMNS, ...READABLE_ACCOUNT_COLUMNS]
+async function get({
+  selectFields = [],
+  where,
+  orderBy
+}) {
+  const READABLE_FIELDS = [...READABLE_REVIEW_FIELDS, ...READABLE_ACCOUNT_FIELDS, ...READABLE_SCOOTER_FIELDS]
 
-  let columns = ['review_id', 'account_id', 'scooter_id']
+  let fields = ['review_id', 'account_id', 'scooter_id']
 
-  if (selectFields[0] === '*') {
-    columns = READABLE_COLUMNS
+  if (selectFields[0] === '*' || selectFields.length === 0) {
+    fields = READABLE_FIELDS
   } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_COLUMNS.includes(field)))
+    fields = fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field)))
   }
 
-  const joinsAccountTable = columns.some(field => READABLE_ACCOUNT_COLUMNS.includes(field)) || Object.keys(where).some(field => READABLE_ACCOUNT_COLUMNS.includes(field))
-  const joinsScooterTable = columns.some(field => READABLE_SCOOTER_COLUMNS.includes(field)) || Object.keys(where).some(field => READABLE_SCOOTER_COLUMNS.includes(field))
+  const joinsAccountTable =
+    fields.some(field => READABLE_ACCOUNT_FIELDS.includes(field)) ||
+    Object.keys(where || {}).some(field => READABLE_ACCOUNT_FIELDS.includes(field))
+  const joinsScooterTable =
+    fields.some(field => READABLE_SCOOTER_FIELDS.includes(field)) ||
+    Object.keys(where || {}).some(field => READABLE_SCOOTER_FIELDS.includes(field))
 
-  columns = columns.map(column => {
-    if (READABLE_ACCOUNT_COLUMNS.includes(column)) {
-      return `account.${column}`
+  fields = fields.map(field => {
+    if (READABLE_ACCOUNT_FIELDS.includes(field)) {
+      return `account.${field}`
     }
 
-    if (READABLE_SCOOTER_COLUMNS.includes(column)) {
-      return `scooter.${column}`
+    if (READABLE_SCOOTER_FIELDS.includes(field)) {
+      if (field === 'geom') {
+        return 'ST_AsText(scooter.geom) as geom'
+      }
+
+      return `scooter.${field}`
     }
 
-    return `review.${column}`
+    return `review.${field}`
   })
 
-  let queryString = `SELECT ${columns.join(', ')} FROM Review`
+  let queryString = `SELECT ${fields.join(', ')} FROM Review`
 
   if (joinsAccountTable) {
     queryString += ' INNER JOIN account ON review.account_id = account.account_id'
@@ -117,31 +97,37 @@ async function getWhere({ where, selectFields = [] }) {
 
   let placeholderCounter = 1
   let conditions = []
-  Object.entries(where).forEach(([columnName, value]) => {
+  Object.entries(where || {}).forEach(([field, value]) => {
     if (['string', 'number', 'boolean'].indexOf(typeof value) === -1) {
       return
     }
 
-    if (READABLE_REVIEW_COLUMNS.includes(decamelize(columnName))) {
-      conditions.push(`review.${decamelize(columnName)}=$${placeholderCounter++}`)
+    const operator = dataTypeMap[field] === 'string' ? 'ILIKE' : '='
+
+    if (READABLE_REVIEW_FIELDS.includes(decamelize(field))) {
+      conditions.push(`review.${decamelize(field)} ${operator} $${placeholderCounter++}`)
     }
 
-    if (READABLE_SCOOTER_COLUMNS.includes(decamelize(columnName))) {
-      conditions.push(`scooter.${decamelize(columnName)}=$${placeholderCounter++}`)
+    if (READABLE_SCOOTER_FIELDS.includes(decamelize(field))) {
+      conditions.push(`scooter.${decamelize(field)} ${operator} $${placeholderCounter++}`)
     }
 
-    if (READABLE_ACCOUNT_COLUMNS.includes(decamelize(columnName))) {
-      conditions.push(`account.${decamelize(columnName)}=$${placeholderCounter++}`)
+    if (READABLE_ACCOUNT_FIELDS.includes(decamelize(field))) {
+      conditions.push(`account.${decamelize(field)} ${operator} $${placeholderCounter++}`)
     }
   })
 
-  queryString += ` WHERE ${conditions.join(' AND ')}`
-
-  if (columns.includes('date') && columns.includes('time')) {
-    queryString += ' ORDER BY date DESC, time DESC'
+  if (conditions.length) {
+    queryString += ` WHERE ${conditions.join(' AND ')}`
   }
 
-  const queryData = Object.values(where).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
+  if (orderBy) {
+    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([field, direction]) => {
+      return `review.${decamelize(field)} ${direction.toUpperCase()}`
+    }).join(', ')
+  }
+
+  const queryData = Object.values(where || {}).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
 
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
@@ -152,46 +138,38 @@ async function getWhere({ where, selectFields = [] }) {
   return result.rows.map(camelCaseMapKeys)
 }
 
-async function createReview({ accountId, scooterId, data }) {
-  const columns = ['account_id', 'scooter_id']
-  const values = ['$1', '$2']
-  const queryData = [parseInt(accountId), parseInt(scooterId)]
-  let placeholderCounter = values.length + 1
+async function createReview({
+  accountId,
+  scooterId,
+  rating,
+  text
+}) {
+  const fields = ['account_id', 'scooter_id', 'rating', 'text']
+  const values = ['$1', '$2', '$3', '$4']
+  const queryData = [parseInt(accountId), parseInt(scooterId), rating, text]
 
-  Object.entries(data).forEach(([key, value]) => {
-    if (EDITABLE_REVIEW_COLUMNS.indexOf(decamelize(key)) === -1) {
-      return
-    }
-
-    columns.push(decamelize(key))
-    values.push(`$${placeholderCounter}`)
-    queryData.push(value)
-
-    placeholderCounter++
-  })
-
-  const queryString = `INSERT INTO Review(${columns.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
+  const queryString = `INSERT INTO Review(${fields.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
 
   return query(queryString, sanitize(queryData));
 }
 
 async function updateReview({ reviewId, updateMap }) {
-  const columns = []
+  const fields = []
   const queryData = [parseInt(reviewId)]
   let placeholderCounter = values.length + 1
 
   Object.entries(updateMap).forEach(([key, value]) => {
-    if (EDITABLE_REVIEW_COLUMNS.indexOf(decamelize(key)) === -1) {
+    if (EDITABLE_REVIEW_FIELDS.indexOf(decamelize(key)) === -1) {
       return
     }
 
-    columns.push(`${decamelize(key)}=$${placeholderCounter}`)
+    fields.push(`${decamelize(key)}=$${placeholderCounter}`)
     queryData.push(value)
 
     placeholderCounter++
   })
 
-  const queryString = `UPDATE Review SET ${columns.join(', ')} WHERE review_id=$1 RETURNING *`
+  const queryString = `UPDATE Review SET ${fields.join(', ')} WHERE review_id=$1 RETURNING *`
 
   return query(queryString, sanitize(queryData));
 }
@@ -203,8 +181,7 @@ async function deleteReview({ reviewId }) {
   return query(queryString, data);
 }
 
-module.exports.getAll = getAll
-module.exports.getWhere = getWhere
+module.exports.get = get
 module.exports.createReview = createReview
 module.exports.updateReview = updateReview
 module.exports.deleteReview = deleteReview

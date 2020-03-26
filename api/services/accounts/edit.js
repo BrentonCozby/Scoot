@@ -1,38 +1,52 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const { verifyOneOfRolesMiddleware, validateRequiredParams, to } = require('@utils/index.js')
 const queries = require('./queries/index.js')
 
-async function routeHandler(req, res) {
-  const validation = validateRequiredParams(['accountId', 'updateMap'], req.body)
+async function routeHandler(req, res, next) {
+  const {accountId} = req.params
+  const {email, firstName, lastName, roles} = req.body
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  const pathValidation = validateRequiredParams(['accountId'], req.params)
+  const bodyValidation = validateRequiredParams(['updateMap'], req.body)
+
+  if (!pathValidation.isValid || !bodyValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      pathParamsErrors: pathValidation.messageMap,
+      requestBodyErrors: bodyValidation.messageMap
     })
   }
 
-  const [updateErr, result] = await to(queries.updateAccount({
-    accountId: req.body.accountId,
-    updateMap: req.body.updateMap
+  const [getErr, accounts] = await to(queries.get({
+    where: {
+      accountId
+    }
   }))
 
+  if (getErr) {
+    return next(getErr)
+  }
+
+  if (!accounts[0]) {
+    return res.status(404).json({
+      message: `Could not find account with accountId: ${accountId}`,
+      pathParamsErrors: {
+        accountId: 'Not found'
+      }
+    })
+  }
+
+  const [updateErr] = await to(queries.update({accountId, email, firstName, lastName, roles}))
+
   if (updateErr) {
-    console.error('\nError:\n', err);
-    return res.status(500).json({ message: 'Internal server error.' })
+    return next(updateErr)
   }
 
-  if (result.rowCount === 0) {
-    return res.status(500).json({ message: 'Account not updated.' })
-  }
-
-  res.json({ message: `Account updated with accountId: ${req.body.accountId}` })
+  res.json({ message: `Account updated with accountId: ${accountId}` })
 }
 
-router.put('*',
+module.exports = [
   authMiddleware,
   verifyOneOfRolesMiddleware(['admin', 'manager']),
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

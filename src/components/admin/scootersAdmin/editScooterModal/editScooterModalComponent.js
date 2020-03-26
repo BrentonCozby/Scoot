@@ -153,9 +153,9 @@ class EditScooterModal extends Component {
     const [createErr] = await to(ScooterService.createScooter({ ...scooterData }))
 
     if (createErr) {
-      if (createErr && createErr.messageMap) {
+      if (createErr && createErr.requestBodyErrors) {
         this.setState({
-          fields: FormService.setFieldMessages(this.state.fields, createErr.messageMap, 'error')
+          fields: FormService.setFieldMessages(this.state.fields, createErr.requestBodyErrors, 'error')
         })
       } else {
         this.setState({
@@ -185,9 +185,9 @@ class EditScooterModal extends Component {
     }))
 
     if (editErr) {
-      if (editErr && editErr.messageMap) {
+      if (editErr && editErr.requestBodyErrors) {
         this.setState({
-          fields: FormService.setFieldMessages(this.state.fields, editErr.messageMap, 'error')
+          fields: FormService.setFieldMessages(this.state.fields, editErr.requestBodyErrors, 'error')
         })
       } else {
         this.setState({

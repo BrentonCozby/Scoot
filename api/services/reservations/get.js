@@ -1,78 +1,38 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const queries = require('./queries/index.js')
-const getBetweenDates = require('./queries/getBetweenDates.js')
-const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.js')
+const { to } = require('@utils/index.js')
 
-async function getAll(req, res, next) {
-  const rolesList = (req.user.roles || '').split(' ')
+async function routeHandler(req, res, next) {
+  const {reservationId} = req.params
+  const {selectFields, where, orderBy, distanceFrom, betweenDates} = req.query
 
-  const isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
+  let conditions = where || null
 
-  if (!isAuthorizedByRole) {
-    return res.status(403).json({ message: 'Invalid account roles', roles: req.user.roles })
+  if (reservationId) {
+    conditions = where || {}
+    conditions.reservationId = reservationId
   }
 
-  const [getAllErr, reservationList] = await to(queries.getAll({
-    selectFields: req.body.selectFields,
-    orderBy: req.body.orderBy
-  }))
-
-  if (getAllErr) {
-    console.error('\nError:\n', getAllErr);
-    return res.status(500).json({ message: 'Internal server error.' })
-  }
-
-  res.json(reservationList || [])
-}
-
-async function getWhere(req, res, next) {
-  const validation = validateRequiredParams(['where'], req.body)
-
-  if (!validation.isValid) {
-    return res.status(409).json({
-      message: 'Missing parameters',
-      messageMap: validation.messageMap
-    })
-  }
-
-  let queryFunction = queries.getWhere
-
-  if (req.body.where.betweenDates) {
-    queryFunction = getBetweenDates
-  }
-
-  const [getErr, reservationList] = await to(queryFunction({
-    where: req.body.where,
-    selectFields: req.body.selectFields,
-    orderBy: req.body.orderBy
+  const [getErr, reservationList] = await to(queries.get({
+    selectFields: (selectFields || '').split(','),
+    where: conditions,
+    orderBy,
+    distanceFrom: (distanceFrom || '').split(','),
+    betweenDates: (betweenDates || '').split(',')
   }))
 
   if (getErr) {
-    console.error('\nError:\n', getErr);
-    return res.status(500).json({ message: 'Internal server error.' })
+    return next(getErr)
   }
 
-  res.json(reservationList || [])
+  if (reservationList.length === 0) {
+    return res.status(404).json({message: `No reservation(s) found`})
+  }
+
+  res.json(reservationList)
 }
 
-async function routeHandler(req, res, next) {
-  if (req.body.all) {
-    return getAll(req, res, next)
-  }
-
-  if (req.body.where) {
-    return getWhere(req, res, next)
-  }
-
-  res.status(406).json({
-    message: 'Parameters for getting reservations are required',
-    params: 'all (boolean), where (map)'
-  })
-}
-
-router.post('*',
+module.exports = [
   authMiddleware,
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]

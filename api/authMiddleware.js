@@ -1,8 +1,9 @@
+const {resolve} = require('path')
 const jwt = require('jsonwebtoken')
 const { to } = require('@utils/index.js')
-const { getWhere } = require('@services/accounts/queries/index.js')
+const { get } = require('@services/accounts/queries/index.js')
 
-require('dotenv').config({ path: '../api.env' })
+require('dotenv').config({ path: resolve('api.env') })
 
 async function authMiddleware(req, res, next) {
   const selectFields = ['email', 'first_name', 'last_name', 'roles']
@@ -12,16 +13,15 @@ async function authMiddleware(req, res, next) {
     : ''
   const jwtPayload = jwt.verify(encodedToken, new Buffer.from(process.env.JWT_SECRET, 'base64'))
 
-  const [err, result] = await to(getWhere({
+  const [getErr, result] = await to(get({
     where: {
       accountId: jwtPayload.accountId
     },
     selectFields
   }))
 
-  if (err) {
-    console.error('\nError:\n', err)
-    return next(err, false)
+  if (getErr) {
+    return next(getErr)
   }
 
   req.user = result && result.length

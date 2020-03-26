@@ -1,32 +1,38 @@
 require('express')
 const router = require('express-promise-router')()
-const fs = require('fs')
-const { resolve } = require('path')
 
-const IGNORED_FILEPATHS = ['queries']
+const auth = require('./services/auth')
+const accounts = require('./services/accounts')
+const scooters = require('./services/scooters')
+const reviews = require('./services/reviews')
+const reservations = require('./services/reservations')
 
-fs.readdir(resolve(__dirname, 'services'), (err, categories) => {
-  categories.forEach(category => {
-    const categoryPath = resolve(__dirname, 'services', category)
+router.get('/login', ...auth.createToken)
 
-    fs.readdir(categoryPath, (err, services) => {
-      services.forEach(service => {
-        const serviceName = service.split('.js')[0]
+router.get('/accounts', ...accounts.get)
+router.get('/accounts/:accountId', ...accounts.get)
+router.post('/accounts', ...accounts.create)
+router.put('/accounts/:accountId', ...accounts.edit)
+router.patch('/accounts/:accountId/reset-password', ...accounts.updatePassword)
+router.delete('/accounts/:accountId', ...accounts.remove)
 
-        if (IGNORED_FILEPATHS.includes(serviceName)) {
-          return
-        }
+router.get('/reservations', ...reservations.get)
+router.get('/reservations/:reservationId', ...reservations.get)
+router.post('/reservations', ...reservations.create)
+router.put('/reservations/:reservationId', ...reservations.edit)
+router.delete('/reservations/:reservationId', ...reservations.remove)
 
-        const controller = require(`./services/${category}/${serviceName}.js`)
+router.get('/reviews', ...reviews.get)
+router.get('/reviews/:reviewId', ...reviews.get)
+router.post('/reviews', ...reviews.create)
+router.put('/reviews/:reviewId', ...reviews.edit)
+router.delete('/reviews/:reviewId', ...reviews.remove)
 
-        router.all(`/${category}/${serviceName}`, controller)
-      })
-    })
-  })
-})
-
-router.use(function(error, req, res, next) {
-  res.json({ message: error.message });
-})
+router.get('/scooters', ...scooters.get)
+router.get('/scooters/:scooterId', ...scooters.get)
+router.post('/scooters', ...scooters.create)
+router.put('/scooters/:scooterId', ...scooters.edit)
+router.put('/scooters/:scooterId/scooter-image', ...scooters.uploadImage)
+router.delete('/scooters/:scooterId', ...scooters.remove)
 
 module.exports = router

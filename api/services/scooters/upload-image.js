@@ -1,27 +1,25 @@
-const router = require('express-promise-router')()
 const { authMiddleware } = require('@root/authMiddleware.js')
 const { verifyOneOfRolesMiddleware, validateRequiredParams, to } = require('@utils/index.js')
 const { uploadScooterImage } = require('@utils/aws-s3.js')
 const multer = require('multer')
 const upload = multer()
 
-async function routeHandler(req, res) {
-  const validation = validateRequiredParams(['scooterId'], req.body)
+async function routeHandler(req, res, next) {
+  const {scooterId} = req.params
 
-  const { scooterId } = req.body
-  const image = req.file
+  const pathValidation = validateRequiredParams(['scooterId'], req.params)
 
-  if (!validation.isValid) {
-    return res.status(409).json({
+  if (!pathValidation.isValid) {
+    return res.status(400).json({
       message: 'Missing parameters',
-      messageMap: validation.messageMap
+      pathParamsErrors: pathValidation.messageMap
     })
   }
 
   if (!image) {
-    return res.status(409).json({
+    return res.status(400).json({
       message: 'Image missing. Please provide an image.',
-      messageMap: {}
+      fileErrors: {}
     })
   }
 
@@ -32,17 +30,15 @@ async function routeHandler(req, res) {
   }))
 
   if (uploadErr) {
-    console.error('\nError:\n', uploadErr)
-    return res.status(500).json({ message: 'Internal server error.' })
+    return next(uploadErr)
   }
 
   res.json({ message: `Image uploaded with scooterId: ${req.body.scooterId}. ${imageUrl}` })
 }
 
-router.put('*',
+module.exports = [
   authMiddleware,
   verifyOneOfRolesMiddleware(['admin', 'manager']),
   upload.single('image'),
-  routeHandler)
-
-module.exports = router
+  routeHandler
+]
