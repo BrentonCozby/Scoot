@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk')
 const s3 = new AWS.S3()
-const { updateScooter } = require('@services/scooters/queries/index.js')
+const { update: updateScooter } = require('@services/scooters/queries/index.js')
 
 function uploadScooterImage({ scooterId, image, filepath }) {
   params = {

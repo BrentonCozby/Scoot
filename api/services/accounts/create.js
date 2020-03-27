@@ -3,14 +3,14 @@ const queries = require('./queries/index.js')
 const santizeHtml = require('sanitize-html')
 
 async function routeHandler(req, res, next) {
-  const {email, password, firstName, lastName, roles} = req.query
+  const {email, password, firstName, lastName, roles} = req.body
 
-  const queryValidation = validateRequiredParams(['email', 'password', 'firstName', 'lastName'], req.query)
+  const bodyValidation = validateRequiredParams(['email', 'password', 'firstName', 'lastName'], req.body)
 
-  if (!queryValidation.isValid) {
+  if (!bodyValidation.isValid) {
     return res.status(400).json({
-      message: 'Missing query parameters',
-      queryParamsErrors: queryValidation.messageMap
+      message: 'Missing request body parameters',
+      requestBodyErrors: bodyValidation.messageMap
     })
   }
 

@@ -4,16 +4,16 @@ const { verifyOneOfRoles, validateRequiredParams, to } = require('@utils/index.j
 
 async function routeHandler(req, res, next) {
   const {accountId} = req.params
-  const {newPassword} = req.query
+  const {newPassword} = req.body
 
   const pathValidation = validateRequiredParams(['accountId'], req.params)
-  const queryValidation = validateRequiredParams(['newPassword'], req.query)
+  const bodyValidation = validateRequiredParams(['newPassword'], req.body)
 
-  if (!pathValidation.isValid || !queryValidation.isValid) {
+  if (!pathValidation.isValid || !bodyValidation.isValid) {
     return res.status(400).json({
       message: 'Missing parameters',
       pathParamsErrors: pathValidation.messageMap,
-      queryParamsErrors: queryValidation.messageMap
+      bodyParamsErrors: bodyValidation.messageMap
     })
   }
 

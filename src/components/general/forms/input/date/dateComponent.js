@@ -8,12 +8,15 @@ function Date({
   dateValue
 }) {
 
+  const datePickerProps = {...attributes}
+  delete datePickerProps.value
+
   return (
     <DatePicker
       className="date-component"
       popperClassName="date-component-popper"
       selected={dateValue}
-      {...attributes}
+      {...datePickerProps}
     />
   )
 }

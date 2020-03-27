@@ -120,7 +120,7 @@ class SignUp extends Component {
   submitSignUpForm = (e) => {
     e.preventDefault()
 
-    AccountService.createAccount({
+    AccountService.create({
       firstName: this.state.fields.firstName.attributes.value,
       lastName: this.state.fields.lastName.attributes.value,
       roles: this.state.fields.roles.attributes.value,

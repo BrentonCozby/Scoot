@@ -81,7 +81,7 @@ class ScootersAdmin extends Component {
   }
 
   getAllScooters = () => {
-    ScooterService.getWhere({
+    ScooterService.getAll({
       selectFields: [
         'model',
         'photo',
@@ -110,7 +110,7 @@ class ScootersAdmin extends Component {
       return
     }
 
-    ScooterService.deleteScooter({ scooterId })
+    ScooterService.remove({ scooterId })
     .then(() => {
       this.getAllScooters()
     })

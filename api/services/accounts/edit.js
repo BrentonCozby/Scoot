@@ -4,7 +4,7 @@ const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
   const {accountId} = req.params
-  const {email, firstName, lastName, roles} = req.body
+  const {updateMap} = req.body
 
   const pathValidation = validateRequiredParams(['accountId'], req.params)
   const bodyValidation = validateRequiredParams(['updateMap'], req.body)
@@ -20,7 +20,8 @@ async function routeHandler(req, res, next) {
   const [getErr, accounts] = await to(queries.get({
     where: {
       accountId
-    }
+    },
+    updateMap
   }))
 
   if (getErr) {
@@ -36,7 +37,7 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [updateErr] = await to(queries.update({accountId, email, firstName, lastName, roles}))
+  const [updateErr] = await to(queries.update({accountId, updateMap}))
 
   if (updateErr) {
     return next(updateErr)

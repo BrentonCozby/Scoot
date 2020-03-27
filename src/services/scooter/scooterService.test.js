@@ -2,121 +2,163 @@ jest.mock('services/http/httpService.js')
 
 import HttpService from 'services/http/httpService.js'
 import ScooterService from 'services/scooter/scooterService.js'
-import { Object } from 'core-js';
+import qsStringify from 'qs-stringify'
 
 describe('ScooterService', () => {
   beforeEach(() => {
+    HttpService.get.mockReset()
     HttpService.post.mockReset()
     HttpService.put.mockReset()
+    HttpService.patch.mockReset()
     HttpService.remove.mockReset()
   })
 
-  describe('getWhere', () => {
-    it('gets scooter data for a given scooterId', () => {
-      const endpoint = '/scooters/get'
-      const body = {
+  describe('getAll', () => {
+    it('gets all scooters with given conditions', () => {
+      const endpoint = '/scooters'
+      const queryFields = {
+        selectFields: ['description'],
         where: {
-          scooterId: '1'
-        },
-        selectFields: ['model']
+          color: 'black'
+        }
       }
-      const response = [{scooterId: '1', model: 'Patrick'}]
+      const response = [{scooterId: '1', description: 'Great scooter', color: 'black'}]
 
-      HttpService.post.mockReturnValue(Promise.resolve(response))
+      HttpService.get.mockReturnValue(Promise.resolve(response))
 
-      return ScooterService.getWhere(body)
+      return ScooterService.getAll({ ...queryFields })
       .then(res => {
         expect(res).toEqual(response)
-        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
       })
     })
 
     it('parses geom into lat and lng', () => {
-      const endpoint = '/scooters/get'
-      const body = {
-        where: {
-          scooterId: '1'
-        },
+      const endpoint = '/scooters'
+      const queryFields = {
         selectFields: ['geom']
       }
-      const response = [{scooterId: '1', geom: 'POINT(-80.111111, 20.111111)'}]
+      const response = [{scooterId: '1', geom: 'POINT(-80.111111, 20.111111)', lat: 20.111111, lng: 80.111111}]
 
-      HttpService.post.mockReturnValue(Promise.resolve(response))
+      HttpService.get.mockReturnValue(Promise.resolve(response))
 
-      return ScooterService.getWhere(body)
+      return ScooterService.getAll({ ...queryFields })
       .then(res => {
-        expect(res).toEqual({...response,
-          lat: 20.111111,
-          lng: 80.111111
-        })
-        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
+        expect(res).toEqual(response)
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
       })
     })
   })
 
-  describe('createScooter', () => {
+  describe('getById', () => {
+    it('gets a scooter by id', () => {
+      const endpoint = `/scooters/1`
+      const queryFields = {
+        selectFields: ['color']
+      }
+      const response = [{scooterId: '1', color: 'black'}]
+
+      HttpService.get.mockReturnValue(Promise.resolve(response))
+
+      return ScooterService.getById({ scooterId: 1, ...queryFields })
+      .then(res => {
+        expect(res).toEqual(response[0])
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
+      })
+    })
+
+    it('parses geom into lat and lng', () => {
+      const endpoint = '/scooters/1'
+      const queryFields = {
+        selectFields: ['geom']
+      }
+      const response = [{scooterId: '1', geom: 'POINT(-80.111111, 20.111111)', lat: 20.111111, lng: 80.111111}]
+
+      HttpService.get.mockReturnValue(Promise.resolve(response))
+
+      return ScooterService.getById({ scooterId: 1, ...queryFields })
+      .then(res => {
+        expect(res).toEqual(response[0])
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
+      })
+    })
+  })
+
+  describe('create', () => {
     it('creates a scooter for a given scooter', () => {
-      const endpoint = '/scooters/create'
+      const endpoint = '/scooters'
       const body = {
-        scooterId: '1',
-        firstName: 'Patrick',
-        lastName: 'Star',
-        email: 'patrick.star@gmail.com',
-        password: 'patrick',
-        roles: 'admin'
+        photo: 'https://foo.com/some-image.jpg',
+        photoUpload: undefined,
+        model: 'Latest one',
+        color: 'black',
+        description: 'You will love this',
+        lat: 80.00000,
+        lng: 20.11111
       }
       const response = { message: 'Scooter created' }
 
       HttpService.post.mockReturnValue(Promise.resolve(response))
 
-      return ScooterService.createScooter({
-        scooterId: body.scooterId,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        email: body.email,
-        password: body.password,
-        roles: body.roles
-      })
+      return ScooterService.create({ ...body })
       .then(res => {
         expect(res).toEqual(response)
-        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
+        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body, formData: null })
       })
     })
-  })
 
-  describe('deleteScooter', () => {
-    it('deletes a scooter for a given scooterId', () => {
-      const endpoint = '/scooters/delete'
+    it('creates a scooter for a given scooter with a photoUpload', () => {
+      const endpoint = '/scooters'
       const body = {
-        scooterId: '1'
+        photo: undefined,
+        photoUpload: 'some-file.jpg',
+        model: 'Latest one',
+        color: 'black',
+        description: 'You will love this',
+        lat: 80.00000,
+        lng: 20.11111
       }
-      const response = { message: 'Scooter deleted' }
+      const response = { message: 'Scooter created' }
 
-      HttpService.remove.mockReturnValue(Promise.resolve(response))
+      HttpService.post.mockReturnValue(Promise.resolve(response))
 
-      return ScooterService.deleteScooter({ scooterId: body.scooterId })
+      return ScooterService.create({ ...body })
       .then(res => {
         expect(res).toEqual(response)
-        expect(HttpService.remove).toHaveBeenCalledWith({ endpoint, body })
+        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body, formData: expect.objectContaining(new FormData)})
       })
     })
   })
 
-  describe('editScooter', () => {
-    it('deletes an scooter for a given scooterId', () => {
-      const endpoint = '/scooters/edit'
+  describe('edit', () => {
+    it('edits a scooter for a given scooterId', () => {
+      const endpoint = '/scooters/1'
       const body = {
-        scooterId: '1',
-        updateMap: { amount: '120.00' }
+        updateMap: { color: 'red' }
       }
       const response = { message: 'Scooter updated' }
 
       HttpService.put.mockReturnValue(Promise.resolve(response))
 
-      return ScooterService.editScooter({ scooterId: body.scooterId, updateMap: body.updateMap })
+      return ScooterService.edit({ scooterId: 1, ...body })
       .then(res => {
         expect(res).toEqual(response)
         expect(HttpService.put).toHaveBeenCalledWith({ endpoint, body })
+      })
+    })
+  })
+
+  describe('remove', () => {
+    it('deletes a scooter for a given scooterId', () => {
+      const endpoint = '/scooters/1'
+      const response = { message: 'Scooter deleted' }
+
+      HttpService.remove.mockReturnValue(Promise.resolve(response))
+
+      return ScooterService.remove({ scooterId: 1 })
+      .then(res => {
+        expect(res).toEqual(response)
+        expect(HttpService.remove).toHaveBeenCalledWith({ endpoint })
       })
     })
   })

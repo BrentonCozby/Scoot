@@ -12,10 +12,13 @@ export function baseRequest({
   let requestParams = {
     method: method,
     headers: {
-      'Content-Type': 'application/json',
       'Authorization': `Bearer ${getEncodedAccessToken()}`
-    },
-    body: JSON.stringify(body)
+    }
+  }
+
+  if (body) {
+    requestParams.headers['Content-Type'] = 'application/json'
+    requestParams.body = JSON.stringify(body)
   }
 
   if (formData) {
@@ -35,13 +38,20 @@ export function baseRequest({
 
     LoadingService.dequeue([endpoint])
 
-    return res.json()
+    return res.text().then(data => data ? JSON.parse(data) : {})
   })
   .catch((err) => {
     LoadingService.dequeue([endpoint])
 
     return Promise.reject(err)
   })
+}
+
+export function get({
+  endpoint,
+  formData
+}) {
+  return baseRequest({ endpoint, method: 'GET', formData })
 }
 
 export function post({
@@ -60,6 +70,14 @@ export function put({
   return baseRequest({ endpoint, method: 'PUT', body, formData })
 }
 
+export function patch({
+  endpoint,
+  body,
+  formData
+}) {
+  return baseRequest({ endpoint, method: 'PATCH', body, formData })
+}
+
 export function remove({
   endpoint,
   body,
@@ -70,7 +88,9 @@ export function remove({
 
 export default {
   baseRequest,
+  get,
   post,
   put,
+  patch,
   remove
 }

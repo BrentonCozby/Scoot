@@ -59,7 +59,7 @@ async function get({
   if (selectFields[0] === '*' || selectFields.length === 0) {
     fields = READABLE_FIELDS
   } else {
-    fields = fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field)))
+    fields = [...new Set(fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field))))]
   }
 
   const joinsAccountTable =
@@ -132,7 +132,7 @@ async function get({
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
@@ -150,7 +150,13 @@ async function createReview({
 
   const queryString = `INSERT INTO Review(${fields.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
 
-  return query(queryString, sanitize(queryData));
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 async function updateReview({ reviewId, updateMap }) {
@@ -171,14 +177,26 @@ async function updateReview({ reviewId, updateMap }) {
 
   const queryString = `UPDATE Review SET ${fields.join(', ')} WHERE review_id=$1 RETURNING *`
 
-  return query(queryString, sanitize(queryData));
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 async function deleteReview({ reviewId }) {
   const queryString = 'DELETE FROM Review WHERE review_id=$1 RETURNING *'
-  const data = [parseInt(reviewId)]
+  const queryData = [parseInt(reviewId)]
 
-  return query(queryString, data);
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 module.exports.get = get

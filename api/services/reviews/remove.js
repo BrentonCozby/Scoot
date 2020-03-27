@@ -26,12 +26,12 @@ async function routeHandler(req, res, next) {
   }
 
   if (!reviews[0]) {
-    return res.status(204).json({
+    return res.status(200).json({
       message: `Review deleted with reviewId: ${reviewId}`
     })
   }
 
-  if (review[0].accountId !== req.user.accountId) {
+  if (reviews[0].accountId !== req.user.accountId) {
     const rolesList = (req.user.roles || '').split(' ')
 
     isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
@@ -47,7 +47,7 @@ async function routeHandler(req, res, next) {
     return next(deleteErr)
   }
 
-  res.status(204).json({
+  res.status(200).json({
     message: `Review deleted with reviewId: ${reviewId}`
   })
 }

@@ -7,13 +7,13 @@ const scooters = require('./services/scooters')
 const reviews = require('./services/reviews')
 const reservations = require('./services/reservations')
 
-router.get('/login', ...auth.createToken)
+router.get('/create-token', ...auth.createToken)
 
 router.get('/accounts', ...accounts.get)
 router.get('/accounts/:accountId', ...accounts.get)
 router.post('/accounts', ...accounts.create)
 router.put('/accounts/:accountId', ...accounts.edit)
-router.patch('/accounts/:accountId/reset-password', ...accounts.updatePassword)
+router.patch('/accounts/:accountId/update-password', ...accounts.updatePassword)
 router.delete('/accounts/:accountId', ...accounts.remove)
 
 router.get('/reservations', ...reservations.get)

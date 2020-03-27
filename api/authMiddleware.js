@@ -1,7 +1,7 @@
 const {resolve} = require('path')
 const jwt = require('jsonwebtoken')
 const { to } = require('@utils/index.js')
-const { get } = require('@services/accounts/queries/index.js')
+const {get: getAccounts} = require('./services/accounts/queries')
 
 require('dotenv').config({ path: resolve('api.env') })
 
@@ -13,24 +13,24 @@ async function authMiddleware(req, res, next) {
     : ''
   const jwtPayload = jwt.verify(encodedToken, new Buffer.from(process.env.JWT_SECRET, 'base64'))
 
-  const [getErr, result] = await to(get({
+  const [getAccountsErr, accounts] = await to(getAccounts({
+    selectFields,
     where: {
       accountId: jwtPayload.accountId
-    },
-    selectFields
+    }
   }))
 
-  if (getErr) {
-    return next(getErr)
+  if (getAccountsErr) {
+    return next(getAccountsErr)
   }
 
-  req.user = result && result.length
+  req.user = accounts && accounts[0]
     ? {
-      accountId: result[0].accountId,
-      email: result[0].email,
-      firstName: result[0].firstName,
-      lastName: result[0].lastName,
-      roles: result[0].roles
+      accountId: accounts[0].accountId,
+      email: accounts[0].email,
+      firstName: accounts[0].firstName,
+      lastName: accounts[0].lastName,
+      roles: accounts[0].roles
     }
     : false
 

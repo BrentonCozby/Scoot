@@ -17,6 +17,7 @@ class ScooterList extends Component {
 
   async componentDidMount() {
     this.updateScooterList({})
+    this.updateDisplayedList({ resetLimit: true })
   }
 
   componentDidUpdate(prevProps) {

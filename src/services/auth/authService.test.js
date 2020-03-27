@@ -8,6 +8,7 @@ import AuthService from './authService.js'
 import HttpService from 'services/http/httpService.js'
 import jwt from 'jsonwebtoken'
 import history from '../../history.js'
+import qsStringify from 'qs-stringify'
 
 window.localStorage = {
   storage: {},
@@ -41,36 +42,30 @@ describe('AuthService', () => {
 
       AuthService.clearSession()
 
-      expect(localStorage.getItem('accessToken')).toBeUndefined()
+      expect(localStorage.getItem('accessToken')).toBe(null)
     })
   })
 
   describe('createToken', () => {
     it('posts a request to create a token to the accounting-app api', () => {
-      HttpService.post.mockReturnValue(Promise.resolve())
+      HttpService.get.mockReturnValue(Promise.resolve())
 
-      const endpoint = '/auth/create-token'
+      const endpoint = '/create-token'
+      const queryFields = { email: 'foo@gmail.com', password: 'foo' }
 
-      const body = { email: 'foo@gmail.com', password: 'foo' }
+      AuthService.createToken({ ...queryFields })
 
-      const expectedRequest = { endpoint, body }
-
-      AuthService.createToken(body)
-
-      expect(HttpService.post).toHaveBeenCalledWith(expectedRequest)
+      expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
     })
   })
 
   describe('login', () => {
     it('creates an accessToken and saves it to localStorage', () => {
-      HttpService.post.mockReturnValue(Promise.resolve({ accessToken: 'eyaccessToken1234' }))
+      HttpService.get.mockReturnValue(Promise.resolve({ accessToken: 'eyaccessToken1234' }))
 
       return AuthService.login({ email: 'foo@gmail.com', password: 'foo' })
-      .then(res => {
-        expect(HttpService.post).toHaveBeenCalledWith({
-          body: { email: 'foo@gmail.com', password: 'foo' },
-          endpoint: '/auth/create-token'
-        })
+      .then(() => {
+        expect(HttpService.get).toHaveBeenCalled()
         expect(localStorage.getItem('accessToken')).toBe('eyaccessToken1234')
       })
     })
@@ -91,13 +86,13 @@ describe('AuthService', () => {
 
       AuthService.logout()
 
-      expect(localStorage.getItem('accessToken')).toBeUndefined()
+      expect(localStorage.getItem('accessToken')).toBe(null)
     })
 
     it('redirects to home page', () => {
       AuthService.logout()
 
-      expect(history.redirect).toHaveBeenCalledWith('/')
+      expect(history.redirect).toHaveBeenCalledWith('/login')
     })
   })
 
@@ -174,7 +169,7 @@ describe('AuthService', () => {
     it('returns false when token does not exist', () => {
       jwt.verify.mockImplementationOnce(() => undefined)
 
-      localStorage.setItem('accessToken', undefined)
+      localStorage.setItem('accessToken', '')
 
       expect(AuthService.isAuthenticated()).toBe(false)
     })

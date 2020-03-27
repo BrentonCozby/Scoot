@@ -1,63 +1,67 @@
 import HttpService from 'services/http/httpService.js'
+import qsStringify from 'qs-stringify'
 
-export function getAll({ selectFields, orderBy, distanceFrom }) {
-  const endpoint = '/reservations/get'
-  const body = {
-    all: true,
-    selectFields,
-    orderBy,
-    distanceFrom
+export function getAll({ selectFields, where, orderBy, distanceFrom }) {
+  const endpoint = '/reservations'
+  const queryFields = {}
+
+  if (selectFields) queryFields.selectFields = selectFields
+  if (where) queryFields.where = where
+  if (orderBy) queryFields.orderBy = orderBy
+  if (distanceFrom) queryFields.distanceFrom = distanceFrom
+
+  if (queryFields.where) {
+    Object.entries(queryFields.where).forEach(([key, value]) => {
+      if (!value) {
+        delete queryFields.where[key]
+      }
+    })
   }
 
-  return HttpService.post({ endpoint, body })
+  return HttpService.get({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
 }
 
-export function getWhere({ where, selectFields, orderBy, distanceFrom }) {
-  const endpoint = '/reservations/get'
-  const body = {
-    where,
-    selectFields,
-    orderBy,
-    distanceFrom
-  }
+export function getById({ reservationId, selectFields, distanceFrom }) {
+  const endpoint = `/reservations/${reservationId}`
+  const queryFields = {}
 
-  return HttpService.post({ endpoint, body })
+  if (selectFields) queryFields.selectFields = selectFields
+  if (distanceFrom) queryFields.distanceFrom = distanceFrom
+
+  return HttpService.get({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
 }
 
-export function createReservation({ accountId, scooterId, data }) {
-  const endpoint = '/reservations/create'
+export function create({ accountId, scooterId, startDate, endDate }) {
+  const endpoint = '/reservations'
   const body = {
     accountId,
     scooterId,
-    data
+    startDate,
+    endDate
   }
 
   return HttpService.post({ endpoint, body })
 }
 
-export function deleteReservation({ reservationId }) {
-  const endpoint = '/reservations/delete'
+export function edit({ reservationId, updateMap }) {
+  const endpoint = `/reservations/${reservationId}`
   const body = {
-    reservationId
-  }
-
-  return HttpService.remove({ endpoint, body })
-}
-
-export function editReservation({ reservationId, updateMap }) {
-  const endpoint = '/reservations/edit'
-  const body = {
-    reservationId,
     updateMap
   }
 
   return HttpService.put({ endpoint, body })
 }
 
+export function remove({ reservationId }) {
+  const endpoint = `/reservations/${reservationId}`
+
+  return HttpService.remove({ endpoint })
+}
+
 export default {
   getAll,
-  getWhere,
-  createReservation,
-  deleteReservation,
-  editReservation
+  getById,
+  create,
+  edit,
+  remove
 }

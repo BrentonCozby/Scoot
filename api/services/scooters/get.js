@@ -14,18 +14,14 @@ async function routeHandler(req, res, next) {
   }
 
   const [getErr, scooterList] = await to(queries.get({
-    selectFields: (selectFields || '').split(','),
+    selectFields,
     where: conditions,
     orderBy,
-    distanceFrom: (distanceFrom || '').split(',')
+    distanceFrom
   }))
 
   if (getErr) {
     return next(getErr)
-  }
-
-  if (scooterList.length === 0) {
-    return res.status(404).json({message: `No scooter(s) found`})
   }
 
   res.json(scooterList)

@@ -1,67 +1,68 @@
 jest.mock('services/http/httpService.js')
 
+import qsStringify from 'qs-stringify'
 import HttpService from 'services/http/httpService.js'
 import reviewService from 'services/review/reviewService.js'
 
 describe('reviewService', () => {
   beforeEach(() => {
+    HttpService.get.mockReset()
     HttpService.post.mockReset()
     HttpService.put.mockReset()
+    HttpService.patch.mockReset()
     HttpService.remove.mockReset()
   })
 
   describe('getAll', () => {
     it('gets all reviews', () => {
-      const endpoint = '/reviews/get'
-      const body = {
-        all: true,
+      const endpoint = '/reviews'
+      const queryFields = {
         selectFields: ['rating']
       }
       const response = [{reviewId: '1', rating: '4'}]
 
-      HttpService.post.mockReturnValue(Promise.resolve(response))
+      HttpService.get.mockReturnValue(Promise.resolve(response))
 
-      return reviewService.getAll({ selectFields: body.selectFields })
+      return reviewService.getAll({ ...queryFields })
       .then(res => {
         expect(res).toEqual(response)
-        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}`})
       })
     })
   })
 
-  describe('getWhere', () => {
-    it('gets all reviews for a given accountId', () => {
-      const endpoint = '/reviews/get'
-      const body = {
-        where: {
-          accountId: '1'
-        },
+  describe('getById', () => {
+    it('gets review by id', () => {
+      const endpoint = '/reviews/1'
+      const queryFields = {
         selectFields: ['rating']
       }
       const response = [{reviewId: '1', rating: '4'}]
 
-      HttpService.post.mockReturnValue(Promise.resolve(response))
+      HttpService.get.mockReturnValue(Promise.resolve(response))
 
-      return reviewService.getWhere(body)
+      return reviewService.getById({ reviewId: 1, ...queryFields })
       .then(res => {
         expect(res).toEqual(response)
-        expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
+        expect(HttpService.get).toHaveBeenCalledWith({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
       })
     })
   })
 
-  describe('createReview', () => {
-    it('creates an review for a given account', () => {
-      const endpoint = '/reviews/create'
+  describe('create', () => {
+    it('creates a review for a given account', () => {
+      const endpoint = '/reviews'
       const body = {
         accountId: '1',
-        reviewData: { rating: '4' }
+        scooterId: '3',
+        rating: '4',
+        text: 'Awesome scooter'
       }
       const response = { message: 'review created' }
 
       HttpService.post.mockReturnValue(Promise.resolve(response))
 
-      return reviewService.createReview({ accountId: body.accountId, reviewData: body.reviewData })
+      return reviewService.create({ ...body })
       .then(res => {
         expect(res).toEqual(response)
         expect(HttpService.post).toHaveBeenCalledWith({ endpoint, body })
@@ -69,39 +70,35 @@ describe('reviewService', () => {
     })
   })
 
-  describe('deleteReview', () => {
+  describe('edit', () => {
     it('deletes an review for a given reviewId', () => {
-      const endpoint = '/reviews/delete'
+      const endpoint = '/reviews/1'
       const body = {
-        reviewId: '1'
-      }
-      const response = { message: 'review deleted' }
-
-      HttpService.remove.mockReturnValue(Promise.resolve(response))
-
-      return reviewService.deleteReview({ reviewId: body.reviewId })
-      .then(res => {
-        expect(res).toEqual(response)
-        expect(HttpService.remove).toHaveBeenCalledWith({ endpoint, body })
-      })
-    })
-  })
-
-  describe('editReview', () => {
-    it('deletes an review for a given reviewId', () => {
-      const endpoint = '/reviews/edit'
-      const body = {
-        reviewId: '1',
         updateMap: { rating: '4' }
       }
       const response = { message: 'review updated' }
 
       HttpService.put.mockReturnValue(Promise.resolve(response))
 
-      return reviewService.editReview({ reviewId: body.reviewId, updateMap: body.updateMap })
+      return reviewService.edit({ reviewId: 1, ...body })
       .then(res => {
         expect(res).toEqual(response)
         expect(HttpService.put).toHaveBeenCalledWith({ endpoint, body })
+      })
+    })
+  })
+
+  describe('remove', () => {
+    it('deletes an review for a given reviewId', () => {
+      const endpoint = '/reviews/1'
+      const response = { message: 'review deleted' }
+
+      HttpService.remove.mockReturnValue(Promise.resolve(response))
+
+      return reviewService.remove({ reviewId: 1 })
+      .then(res => {
+        expect(res).toEqual(response)
+        expect(HttpService.remove).toHaveBeenCalledWith({ endpoint })
       })
     })
   })

@@ -41,10 +41,10 @@ const dataTypeMap = {
 }
 
 async function get({
-  selectFields,
+  selectFields = [],
   where,
   orderBy,
-  distanceFrom
+  distanceFrom = {}
 }) {
   const READABLE_FIELDS = [...READABLE_SCOOTER_FIELDS, ...READABLE_REVIEW_FIELDS, ...READABLE_RESERVATION_FIELDS]
 
@@ -53,7 +53,7 @@ async function get({
   if (selectFields[0] === '*' || selectFields.length === 0) {
     fields = READABLE_FIELDS
   } else {
-    fields = fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field)))
+    fields = [...new Set(fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field))))]
   }
 
   const joinsReviewTable =
@@ -66,7 +66,7 @@ async function get({
 
   fields = fields.map(field => {
     if (READABLE_REVIEW_FIELDS.includes(field)) {
-      if (field === 'avg_rating') {
+      if (field === 'avg_rating' || (where && where.hasOwnProperty('avgRating'))) {
         return `AVG(review.rating) as avg_rating, COUNT(review.rating) as review_count`
       }
 
@@ -84,7 +84,7 @@ async function get({
     return `scooter.${field}`
   })
 
-  const [lng, lat] = distanceFrom
+  const {lng, lat} = distanceFrom
   if (lng && lat) {
     fields.push(`ST_Distance(scooter.geom, ST_GeomFromText('POINT(${lng} ${lat})', 26910)) as distance`)
   }
@@ -92,11 +92,11 @@ async function get({
   let queryString = `SELECT ${fields.join(', ')} FROM Scooter`
 
   if (joinsReviewTable) {
-    queryString += ` ${where ? 'INNER' : 'LEFT'} JOIN review ON scooter.scooter_id = review.scooter_id`
+    queryString += ` \nLEFT JOIN\n review ON scooter.scooter_id = review.scooter_id`
   }
 
   if (joinsReservationTable) {
-    queryString += ` ${where ? 'INNER' : 'LEFT'} JOIN reservation ON scooter.scooter_id = reservation.scooter_id`
+    queryString += ` \n${where ? 'INNER' : 'LEFT'} JOIN\n reservation ON scooter.scooter_id = reservation.scooter_id`
   }
 
   let placeholderCounter = 1
@@ -113,6 +113,10 @@ async function get({
     }
 
     if (READABLE_REVIEW_FIELDS.includes(decamelize(field))) {
+      if (field === 'avgRating') {
+        return
+      }
+
       conditions.push(`review.${decamelize(field)} ${operator} $${placeholderCounter++}`)
     }
 
@@ -121,15 +125,15 @@ async function get({
     }
   })
 
-  const [xmin, xmax, ymin, ymax] = where.bounds.split(',')
+  const {xmin, xmax, ymin, ymax} = (where || {}).bounds || {}
   if (xmin && xmax && ymin && ymax) {
     conditions.push(`scooter.geom && ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 26910)`)
   }
 
   if (conditions.length) {
-    queryString += ` WHERE ${conditions.join(' AND ')}`
+    queryString += ` \nWHERE\n ${conditions.join(' AND ')}`
 
-    if (where.reservedBetween.min && where.reservedBetween.max) {
+    if (where.reservedBetween && where.reservedBetween.min && where.reservedBetween.max) {
       queryString += `
         AND scooter.scooter_id IN (
           SELECT reservation.scooter_id
@@ -140,7 +144,7 @@ async function get({
           )
         )
       `
-    } else if (where.availableBetween.min && where.availableBetween.max) {
+    } else if (where.availableBetween && where.availableBetween.min && where.availableBetween.max) {
       queryString += `
         AND scooter.scooter_id NOT IN (
           SELECT reservation.scooter_id
@@ -161,27 +165,42 @@ async function get({
       groups.push('scooter.scooter_id')
     }
 
-    queryString += ` GROUP BY ${groups.join(', ')}`
+    if (groups.length) {
+      queryString += ` \nGROUP BY\n ${groups.join(', ')}`
+    }
+  }
+
+  if (where && where.avgRating) {
+    queryString += ` \nHAVING\n AVG(review.rating) >= ${where.avgRating}`
   }
 
   if (orderBy) {
-    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([field, direction]) => {
+    queryString += ' \nORDER BY\n ' + Object.entries(orderBy).map(([field, direction]) => {
       return `${decamelize(field)} ${direction.toUpperCase()}`
     }).join(', ')
   }
 
-  const queryData = Object.values(where || {}).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
+  const queryData = []
+  Object.entries(where || {}).filter(([key, value]) => {
+    if (key === 'avgRating') {
+      return
+    }
+
+    if (['string', 'number', 'boolean'].indexOf(typeof value) >= 0) {
+      queryData.push(value)
+    }
+  })
 
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
 }
 
-function create({
+async function create({
   model,
   photo,
   color,
@@ -190,15 +209,21 @@ function create({
   lng
 }) {
   let fields = ['model', 'photo', 'color', 'description', 'geom']
-  const values = ['$1', '$2', '$3', '$4', '$5', `ST_GeomFromText('POINT(${lng} ${lat})', 26910)`]
-  const queryData = [model, photo, color, description, lat, lng]
+  const values = ['$1', '$2', '$3', '$4', `ST_GeomFromText('POINT(${lng} ${lat})', 26910)`]
+  const queryData = [model, photo, color, description]
 
   const queryString = `INSERT INTO scooter(${fields.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
 
-  return query(queryString, sanitize(queryData))
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
-function update({
+async function update({
   scooterId,
   updateMap
 }) {
@@ -226,14 +251,26 @@ function update({
 
   const queryString = `UPDATE Scooter SET ${set.join(', ')} WHERE scooter_id=$1 RETURNING *`
 
-  return query(queryString, sanitize(queryData))
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
-function remove({ scooterId }) {
+async function remove({ scooterId }) {
   const queryString = 'DELETE FROM Scooter WHERE scooter_id=$1 RETURNING *'
   const queryData = [parseInt(scooterId)]
 
-  return query(queryString, queryData)
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 module.exports.get = get

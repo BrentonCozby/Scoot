@@ -4,7 +4,9 @@ const router = require('./router.js')
 const errorHandlers = require('./errors/index')
 const app = express()
 
-// app.use(require('express-pino-logger')())
+if (process.env.NODE_ENV === 'production') {
+  app.use(require('express-pino-logger')())
+}
 
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['http://localhost:3000'])

@@ -150,7 +150,7 @@ class EditScooterModal extends Component {
   }
 
   saveNewScooter = async (scooterData) => {
-    const [createErr] = await to(ScooterService.createScooter({ ...scooterData }))
+    const [createErr] = await to(ScooterService.create({ ...scooterData }))
 
     if (createErr) {
       if (createErr && createErr.requestBodyErrors) {
@@ -179,7 +179,7 @@ class EditScooterModal extends Component {
   }
 
   saveEditedScooter = async (scooterData) => {
-    const [editErr] = await to(ScooterService.editScooter({
+    const [editErr] = await to(ScooterService.edit({
       scooterId: this.props.scooter.scooterId,
       updateMap: scooterData
     }))

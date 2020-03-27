@@ -111,7 +111,7 @@ class AccountsAdmin extends Component {
       return
     }
 
-    AccountService.deleteAccount({ accountId })
+    AccountService.remove({ accountId })
     .then(() => {
       this.getAllAccounts()
     })

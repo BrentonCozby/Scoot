@@ -14,30 +14,14 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  let [getErr, scooters] = await to(queries.get({
-    where: {
-      scooterId
-    }
-  }))
-
-  if (getErr) {
-    return next(getErr)
-  }
-
-  if (!scooters[0]) {
-    return res.status(204).json({
-      message: `Reservation deleted with scooterId: ${scooterId}`
-    })
-  }
-
-  const [deleteErr] = await to(queries.remove({scooterId}))
+  const [deleteErr, result] = await to(queries.remove({scooterId}))
 
   if (deleteErr) {
     return next(deleteErr)
   }
 
-  res.status(204).json({
-    message: `Reservation deleted with scooterId: ${scooterId}`
+  res.status(200).json({
+    message: `Scooter deleted with scooterId: ${scooterId}`
   })
 }
 

@@ -156,7 +156,6 @@ class EditAccountModal extends Component {
     e.preventDefault()
 
     const accountData = {
-      accountId: this.state.fields.accountId.attributes.value,
       firstName: this.state.fields.firstName.attributes.value,
       lastName: this.state.fields.lastName.attributes.value,
       email: this.state.fields.email.attributes.value,
@@ -174,7 +173,7 @@ class EditAccountModal extends Component {
   }
 
   saveNewAccount = (accountData) => {
-    AccountService.createAccount({ ...accountData })
+    AccountService.create({ ...accountData })
     .then(() => {
       this.props.closeAccountModal({ refreshAccounts: true })
     })
@@ -190,7 +189,7 @@ class EditAccountModal extends Component {
   }
 
   saveEditedAccount = (accountData) => {
-    AccountService.editAccount({ accountId: this.props.account.accountId, updateMap: accountData })
+    AccountService.edit({ accountId: this.props.account.accountId, updateMap: accountData })
     .then(() => {
       this.props.closeAccountModal({ refreshAccounts: true })
     })

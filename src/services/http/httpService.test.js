@@ -20,25 +20,20 @@ describe('HttpService', () => {
 
   describe('baseRequest', () => {
     it('sends request to api endpoint with access token and returns data as json', () => {
-      const body = { accountId: '1234' }
-
       const expectedRequest = {
-        method: 'POST',
-        body: JSON.stringify(body),
+        method: 'GET',
         headers: {
-          'Authorization': 'Bearer accessToken',
-          'Content-Type': 'application/json'
+          'Authorization': 'Bearer accessToken'
         }
       }
 
       return HttpService.baseRequest({
-        endpoint: '/reservations/get',
-        method: 'POST',
-        body: body
+        endpoint: '/reservations',
+        method: 'GET'
       })
       .then((res) => {
         expect(res).toEqual(fetchResponse.json())
-        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/get', expectedRequest)
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations', expectedRequest)
       })
     })
   })
@@ -54,9 +49,8 @@ describe('HttpService', () => {
       window.fetch = jest.fn(() => Promise.resolve(fetchResponse))
 
       return HttpService.baseRequest({
-        endpoint: '/reservations/get',
-        method: 'POST',
-        body: { accountId: '1234' }
+        endpoint: '/reservations',
+        method: 'GET'
       })
       .catch((res) => {
         expect(res).toEqual(fetchResponse.json())
@@ -64,9 +58,26 @@ describe('HttpService', () => {
     })
   })
 
+  describe('get', () => {
+    it('sends a baseRequest with method of GET', () => {
+      const expectedRequest = {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer accessToken'
+        }
+      }
+
+      return HttpService.post({endpoint: '/reservations'})
+      .then((res) => {
+        expect(res).toEqual(fetchResponse.json())
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations', expectedRequest)
+      })
+    })
+  })
+
   describe('post', () => {
     it('sends a baseRequest with method of POST', () => {
-      const body = { accountId: '1234' }
+      const body = { email: '1234' }
 
       const expectedRequest = {
         method: 'POST',
@@ -78,19 +89,19 @@ describe('HttpService', () => {
       }
 
       return HttpService.post({
-        endpoint: '/reservations/get',
+        endpoint: '/reservations',
         body
       })
       .then((res) => {
         expect(res).toEqual(fetchResponse.json())
-        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/get', expectedRequest)
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations', expectedRequest)
       })
     })
   })
 
   describe('put', () => {
     it('sends a baseRequest with method of POST', () => {
-      const body = { accountId: '1234' }
+      const body = { email: 'foo@gmail.com' }
 
       const expectedRequest = {
         method: 'PUT',
@@ -102,22 +113,22 @@ describe('HttpService', () => {
       }
 
       return HttpService.put({
-        endpoint: '/reservations/get',
+        endpoint: '/reservations/2',
         body
       })
       .then((res) => {
         expect(res).toEqual(fetchResponse.json())
-        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/get', expectedRequest)
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/2', expectedRequest)
       })
     })
   })
 
-  describe('remove', () => {
+  describe('patch', () => {
     it('sends a baseRequest with method of POST', () => {
-      const body = { accountId: '1234' }
+      const body = { email: 'foo@gmail.com' }
 
       const expectedRequest = {
-        method: 'DELETE',
+        method: 'PUT',
         body: JSON.stringify(body),
         headers: {
           'Authorization': 'Bearer accessToken',
@@ -125,13 +136,30 @@ describe('HttpService', () => {
         }
       }
 
-      return HttpService.remove({
-        endpoint: '/reservations/get',
+      return HttpService.put({
+        endpoint: '/reservations/2',
         body
       })
       .then((res) => {
         expect(res).toEqual(fetchResponse.json())
-        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/get', expectedRequest)
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/2', expectedRequest)
+      })
+    })
+  })
+
+  describe('remove', () => {
+    it('sends a baseRequest with method of POST', () => {
+      const expectedRequest = {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer accessToken'
+        }
+      }
+
+      return HttpService.remove({endpoint: '/reservations/2'})
+      .then((res) => {
+        expect(res).toEqual(fetchResponse.json())
+        expect(fetch).toHaveBeenCalledWith('http://localhost:4001/reservations/2', expectedRequest)
       })
     })
   })

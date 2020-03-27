@@ -6,20 +6,16 @@ const upload = multer()
 
 async function routeHandler(req, res, next) {
   const {scooterId} = req.params
+  const image = req.file
 
   const pathValidation = validateRequiredParams(['scooterId'], req.params)
+  const fileValidation = validateRequiredParams(['image'], {image})
 
-  if (!pathValidation.isValid) {
+  if (!pathValidation.isValid || !fileValidation.isValid) {
     return res.status(400).json({
       message: 'Missing parameters',
-      pathParamsErrors: pathValidation.messageMap
-    })
-  }
-
-  if (!image) {
-    return res.status(400).json({
-      message: 'Image missing. Please provide an image.',
-      fileErrors: {}
+      pathParamsErrors: pathValidation.messageMap,
+      fileErrors: fileValidation.messageMap
     })
   }
 

@@ -3,7 +3,7 @@ const { validateRequiredParams, to } = require('@utils/index.js')
 const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
-  const {accountId, scooterId, rating, text} = req.body.accountId
+  const {accountId, scooterId, rating, text} = req.body
 
   const bodyValidation = validateRequiredParams(['accountId', 'scooterId', 'rating', 'text'], req.body)
 

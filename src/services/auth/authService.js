@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import HttpService from 'services/http/httpService.js'
 import history from '../../history.js'
+import qsStringify from 'qs-stringify'
 
 export function setSession(accessToken) {
   localStorage.setItem('accessToken', accessToken)
@@ -11,10 +12,10 @@ export function clearSession() {
 }
 
 export function createToken({ email, password }) {
-  const endpoint = '/auth/create-token'
-  const body = { email, password }
+  const endpoint = '/create-token'
+  const queryFields = { email, password }
 
-  return HttpService.post({ endpoint, body })
+  return HttpService.get({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
 }
 
 export function login({ email, password }) {

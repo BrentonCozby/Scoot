@@ -24,7 +24,7 @@ export async function updateMapBounds({ xmin, ymin, xmax, ymax }) {
 }
 
 export async function updateScooterList({ where, distanceFrom, selectFields, orderBy }) {
-  const [err, scooterList] = await to(ScooterService.getWhere({
+  const [err, scooterList] = await to(ScooterService.getAll({
     where,
     distanceFrom,
     selectFields,

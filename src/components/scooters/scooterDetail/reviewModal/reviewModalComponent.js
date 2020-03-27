@@ -56,15 +56,14 @@ class ReviewModal extends Component {
   submitForm = (e) => {
     e.preventDefault()
 
-    ReviewService.createReview({
+    ReviewService.create({
       accountId: this.props.accountId,
       scooterId: this.props.scooterId,
-      data: {
-        rating: this.state.fields.rating.attributes.value || undefined,
-        text: this.state.fields.text.attributes.value || undefined
-      }
+      rating: this.state.fields.rating.attributes.value || undefined,
+      text: this.state.fields.text.attributes.value || undefined
     })
     .then(() => {
+      this.props.onClose()
       this.props.toggleModal()
     })
     .catch(err => {

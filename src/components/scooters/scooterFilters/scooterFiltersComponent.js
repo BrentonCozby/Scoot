@@ -13,7 +13,7 @@ class ScooterFilters extends Component {
       startDate: {
         label: 'Start Date',
         columnSize: 2,
-        dateValue: moment(),
+        dateValue: null,
         attributes: {
           id: 'startDate',
           type: 'date',
@@ -23,7 +23,7 @@ class ScooterFilters extends Component {
       endDate: {
         label: 'End Date',
         columnSize: 2,
-        dateValue: moment(),
+        dateValue: null,
         attributes: {
           id: 'endDate',
           type: 'date',
@@ -102,13 +102,16 @@ class ScooterFilters extends Component {
     newFields.startDate.dateValue = null;
     newFields.endDate.dateValue = null;
 
-    this.setState({...this.state, fields: newFields, formError: null})
+    this.setState({...this.state, fields: newFields, formError: null}, () => {
+      this.filterScooters()
+    })
   }
 
   filterScooters = () => {
     const filters = {
       color: this.state.fields.color.attributes.value || undefined,
-      model: this.state.fields.model.attributes.value || undefined
+      model: this.state.fields.model.attributes.value || undefined,
+      avgRating: this.state.fields.avgRating.attributes.value || undefined
     }
 
     if (moment(this.state.fields.startDate.dateValue).isValid() && moment(this.state.fields.endDate.dateValue).isValid()) {

@@ -50,11 +50,11 @@ const dataTypeMap = {
 }
 
 async function get({
-  selectFields,
+  selectFields = [],
   where,
   orderBy,
-  distanceFrom,
-  betweenDates
+  distanceFrom = {},
+  betweenDates = {}
 }) {
   const READABLE_FIELDS = [...READABLE_RESERVATION_FIELDS, ...READABLE_ACCOUNT_FIELDS, ...READABLE_SCOOTER_FIELDS]
 
@@ -63,7 +63,7 @@ async function get({
   if (selectFields[0] === '*' || selectFields.length === 0) {
     fields = READABLE_FIELDS
   } else {
-    fields = fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field)))
+    fields = [...new Set(fields.concat(decamelizeList(selectFields).filter(field => READABLE_FIELDS.includes(field))))]
   }
 
   const joinsAccountTable =
@@ -90,7 +90,7 @@ async function get({
     return `reservation.${field}`
   })
 
-  const [lng, lat] = distanceFrom
+  const {lng, lat} = distanceFrom
   if (lng && lat) {
     fields.push(`ST_Distance(scooter.geom, ST_GeomFromText('POINT(${lng} ${lat})', 26910)) as distance`)
   }
@@ -131,7 +131,7 @@ async function get({
     queryString += ` WHERE ${conditions.join(' AND ')}`
   }
 
-  const [startDate, endDate] = betweenDates
+  const {startDate, endDate} = betweenDates
   if (startDate && endDate) {
     queryString += ` ${conditions.length ? ' AND' :  ' WHERE'}`
     queryString += ` (reservation.start_date BETWEEN '${startDate}' and '${endDate}'`
@@ -149,7 +149,7 @@ async function get({
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
@@ -167,7 +167,13 @@ async function create({
 
   const queryString = `INSERT INTO Reservation(${columns.join(', ')}) VALUES(${values.join(', ')}) RETURNING *`
 
-  return query(queryString, sanitize(queryData))
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 async function update({
@@ -178,28 +184,40 @@ async function update({
   const queryData = [parseInt(reservationId)]
   let placeholderCounter = queryData.length + 1
 
-  Object.entries(updateMap).forEach(([column, value]) => {
-    if (EDITABLE_RESERVATION_FIELDS.indexOf(decamelize(column)) === -1) {
+  Object.entries(updateMap).forEach(([field, value]) => {
+    if (EDITABLE_RESERVATION_FIELDS.indexOf(decamelize(field)) === -1) {
       return
     }
 
-    set.push(`${decamelize(column)}=$${placeholderCounter++}`)
+    set.push(`${decamelize(field)}=$${placeholderCounter++}`)
 
     queryData.push(value)
   })
 
   const queryString = `UPDATE Reservation SET ${set.join(', ')} WHERE reservation_id=$1 RETURNING *`
 
-  return query(queryString, sanitize(queryData))
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 async function remove({
   reservationId
 }) {
   const queryString = 'DELETE FROM Reservation WHERE reservation_id=$1 RETURNING *'
-  const data = [parseInt(reservationId)]
+  const queryData = [parseInt(reservationId)]
 
-  return query(queryString, data)
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 module.exports.get = get

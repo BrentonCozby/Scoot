@@ -12,7 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
   throw reason;
 });
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (err) => {
   // I just received an error that was never handled, time to handle it and then decide whether a restart is needed
   console.error('\nError:\n', err)
 });

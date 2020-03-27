@@ -6,7 +6,7 @@ async function routeHandler(req, res, next) {
   const {scooterId} = req.params
   const {updateMap} = req.body
 
-  const pathValidation = validateRequiredParams(['scooterId'], req.body)
+  const pathValidation = validateRequiredParams(['scooterId'], req.params)
   const bodyValidation = validateRequiredParams(['updateMap'], req.body)
 
   if (!pathValidation.isValid || !bodyValidation.isValid) {
@@ -18,6 +18,7 @@ async function routeHandler(req, res, next) {
   }
 
   const [getErr, scooters] = await to(queries.get({
+    selectFields: ['scooterId'],
     where: {
       scooterId
     }
@@ -42,7 +43,7 @@ async function routeHandler(req, res, next) {
     return next(updateErr)
   }
 
-  res.json({ message: `Scooter updated with scooterId: ${req.body.scooterId}` })
+  res.json({ message: `Scooter updated with scooterId: ${scooterId}` })
 }
 
 module.exports = [

@@ -34,19 +34,17 @@ class ScooterDetail extends Component {
     }
   }
 
-  async refreshScooterData() {
-    const [getScooterErr, scooterList] = await to(ScooterService.getWhere({
-      where: {
-        scooterId: this.props.match.params.scooterId
-      },
+  refreshScooterData = async () => {
+    const [getScooterErr, _result] = await to(ScooterService.getById({
+      scooterId: this.props.match.params.scooterId,
       selectFields: ['scooterId', 'model', 'photo', 'avgRating', 'color', 'description']
     }))
 
-    const scooter = { ...(getScooterErr ? {} : scooterList[0] || {})}
+    const scooter = { ...(getScooterErr ? {} : _result || {})}
 
-    this.getReservations(scooterList[0].scooterId)
+    this.getReservations(scooter.scooterId)
 
-    const [getReviewsErr, reviews] = await to(ReviewService.getWhere({
+    const [getReviewsErr, reviews] = await to(ReviewService.getAll({
       where: {
         scooterId: this.props.match.params.scooterId,
         accountId: AuthService.getAuthenticatedAccount().accountId
@@ -67,7 +65,7 @@ class ScooterDetail extends Component {
   }
 
   getReservations = async (scooterId) => {
-    const [err, existingReservations] = await to(ReservationService.getWhere({
+    const [err, existingReservations = []] = await to(ReservationService.getAll({
       where: {
         accountId: AuthService.getAuthenticatedAccount().accountId,
         scooterId: parseInt(scooterId, 10),
@@ -79,7 +77,7 @@ class ScooterDetail extends Component {
       selectFields: ['reservationId', 'startDate', 'endDate']
     }))
 
-    const ownReservation = (existingReservations || []).find(reservation => {
+    const ownReservation = existingReservations.find(reservation => {
       return (
         reservation.scooterId === scooterId &&
         reservation.accountId === AuthService.getAuthenticatedAccount().accountId &&
@@ -94,7 +92,7 @@ class ScooterDetail extends Component {
       )
     })
 
-    const foreignReservation = (existingReservations || []).find(reservation => {
+    const foreignReservation = existingReservations.find(reservation => {
       return (
         reservation.accountId !== AuthService.getAuthenticatedAccount().accountId &&
         moment().isBetween(reservation.startDate, reservation.endDate, 'day', [])
@@ -147,13 +145,11 @@ class ScooterDetail extends Component {
       return
     }
 
-    await to(ReservationService.createReservation({
+    await to(ReservationService.create({
       accountId: AuthService.getAuthenticatedAccount().accountId,
       scooterId: this.state.scooter.scooterId,
-      data: {
-        startDate: this.state.selectedDates.start.format('YYYY-MM-DD'),
-        endDate: this.state.selectedDates.end.format('YYYY-MM-DD')
-      }
+      startDate: this.state.selectedDates.start.format('YYYY-MM-DD'),
+      endDate: this.state.selectedDates.end.format('YYYY-MM-DD')
     }))
 
     this.refreshScooterData()
@@ -164,8 +160,7 @@ class ScooterDetail extends Component {
       return
     }
 
-    await to(ReservationService.deleteReservation({
-      accountId: AuthService.getAuthenticatedAccount().accountId,
+    await to(ReservationService.remove({
       reservationId: this.state.ownReservation.reservationId
     }))
 
@@ -201,6 +196,7 @@ class ScooterDetail extends Component {
             scooterId={scooter.scooterId}
             accountId={AuthService.getAuthenticatedAccount().accountId}
             toggleModal={this.toggleRewiewModal}
+            onClose={this.refreshScooterData}
           />
         }
         <h1 className="title">{scooter.model}</h1>

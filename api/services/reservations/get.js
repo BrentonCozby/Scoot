@@ -14,19 +14,15 @@ async function routeHandler(req, res, next) {
   }
 
   const [getErr, reservationList] = await to(queries.get({
-    selectFields: (selectFields || '').split(','),
+    selectFields,
     where: conditions,
     orderBy,
-    distanceFrom: (distanceFrom || '').split(','),
-    betweenDates: (betweenDates || '').split(',')
+    distanceFrom,
+    betweenDates
   }))
 
   if (getErr) {
     return next(getErr)
-  }
-
-  if (reservationList.length === 0) {
-    return res.status(404).json({message: `No reservation(s) found`})
   }
 
   res.json(reservationList)

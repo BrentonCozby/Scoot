@@ -8,7 +8,7 @@ async function getAccountByEmail({ email }) {
   const [err, result] = await to(query(queryString, data))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return camelCaseMapKeys(result.rows[0])

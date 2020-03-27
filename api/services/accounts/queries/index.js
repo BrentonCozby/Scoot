@@ -4,6 +4,7 @@ const { sanitize, camelCaseMapKeys, decamelizeList, to } = require('@utils/index
 const decamelize = require('decamelize')
 
 const READABLE_ACCOUNT_FIELDS = [
+  'account_id',
   'email',
   'first_name',
   'last_name',
@@ -31,15 +32,15 @@ async function get({
   where,
   orderBy
 }) {
-  let columns = ['account_id']
+  let fields = ['account_id']
 
   if (selectFields[0] === '*' || selectFields.length === 0) {
-    columns = READABLE_ACCOUNT_FIELDS
+    fields = [READABLE_ACCOUNT_FIELDS]
   } else {
-    columns = columns.concat(decamelizeList(selectFields).filter(field => READABLE_ACCOUNT_FIELDS.includes(field)))
+    fields = [...new Set(fields.concat(decamelizeList(selectFields).filter(field => READABLE_ACCOUNT_FIELDS.includes(field))))]
   }
 
-  let queryString = `SELECT ${columns.join(', ')} FROM Account`
+  let queryString = `SELECT ${fields.join(', ')} FROM Account`
 
   let placeholderCounter = 1
   let conditions = []
@@ -60,18 +61,17 @@ async function get({
   }
 
   if (orderBy) {
-    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([column, direction]) => {
-      return `${decamelize(column)} ${direction.toUpperCase()}`
+    queryString += ' ORDER BY ' + Object.entries(orderBy).map(([field, direction]) => {
+      return `${decamelize(field)} ${direction.toUpperCase()}`
     }).join(', ')
   }
 
   const queryData = Object.values(where || {}).filter(value => ['string', 'number', 'boolean'].indexOf(typeof value) >= 0)
 
-  console.log(queryString)
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
@@ -92,7 +92,7 @@ async function create({
   const [err, result] = await to(query(queryString, queryData))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
@@ -100,17 +100,13 @@ async function create({
 
 async function update({
   accountId,
-  email,
-  firstName,
-  lastName,
-  roles
+  updateMap
 }) {
   const set = []
   const queryData = [parseInt(accountId)]
-  const fieldsMap = {email, firstName, lastName, roles}
   let placeholderCounter = queryData.length + 1
 
-  Object.entries(fieldsMap).forEach(([field, value]) => {
+  Object.entries(updateMap).forEach(([field, value]) => {
     if (EDITABLE_ACCOUNT_FIELDS.indexOf(decamelize(field)) === -1) {
       return
     }
@@ -125,7 +121,7 @@ async function update({
   const [err, result] = await to(query(queryString, sanitize(queryData)))
 
   if (err) {
-    return Promise.reject(err)
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
   }
 
   return result.rows.map(camelCaseMapKeys)
@@ -135,23 +131,35 @@ async function updatePassword({
   accountId,
   newPassword
 }) {
-  const [err, passwordHash] = await to(bcrypt.hash(newPassword, 10))
+  const [hashErr, passwordHash] = await to(bcrypt.hash(newPassword, 10))
 
-  if (err) {
-    return Promise.reject(err)
+  if (hashErr) {
+    return Promise.reject(new Error(`\nnode-postgres ${hashErr.toString()}`))
   }
 
   const queryString = `UPDATE Account SET password_hash=$2 WHERE account_id=$1 RETURNING *`
   const queryData = [parseInt(accountId), passwordHash]
 
-  return query(queryString, queryData)
+  const [queryErr, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (queryErr) {
+    return Promise.reject(new Error(`\nnode-postgres ${queryErr.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
-function remove({ accountId }) {
+async function remove({ accountId }) {
   const queryString = 'DELETE FROM Account WHERE account_id=$1 RETURNING *'
   const queryData = [parseInt(accountId)]
 
-  return query(queryString, queryData)
+  const [err, result] = await to(query(queryString, sanitize(queryData)))
+
+  if (err) {
+    return Promise.reject(new Error(`\nnode-postgres ${err.toString()}`))
+  }
+
+  return result.rows.map(camelCaseMapKeys)
 }
 
 module.exports.get = get

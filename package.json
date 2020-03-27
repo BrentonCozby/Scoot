@@ -6,7 +6,7 @@
   "author": "brenton.cozby@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.645.0",
+    "aws-sdk": "^2.647.0",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "brenton-js-utils": "^1.0.2",
@@ -26,12 +26,12 @@
     "qs-stringify": "^1.2.0",
     "rc-time-picker": "^3.7.3",
     "react": "^16.13.1",
-    "react-datepicker": "^2.14.1",
+    "react-datepicker": "^1.5.0",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.4.1",
-    "react-table": "^7.0.0",
+    "react-table": "^6.8.2",
     "redux": "^4.0.5",
     "redux-promise": "^0.6.0",
     "sanitize-html": "^1.22.1",
@@ -46,5 +46,23 @@
   "repository": "https://github.com/BrentonCozby/scoot.git",
   "devDependencies": {
     "svg-react-loader": "^0.4.6"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(css|less|sass|scss)$": "<rootDir>/src/__mocks__/style-mock.js",
+      "\\.(gif|ttf|eot|svg|png|jpg)$": "<rootDir>/src/__mocks__/file-mock.js"
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

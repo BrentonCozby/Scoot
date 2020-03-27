@@ -14,17 +14,13 @@ async function routeHandler(req, res, next) {
   }
 
   const [getErr, accountList] = await to(queries.get({
-    selectFields: (selectFields || '').split(','),
+    selectFields,
     where: conditions,
     orderBy
   }))
 
   if (getErr) {
     return next(getErr)
-  }
-
-  if (accountList.length === 0) {
-    return res.status(404).json({message: `No account(s) found`})
   }
 
   res.json(accountList)

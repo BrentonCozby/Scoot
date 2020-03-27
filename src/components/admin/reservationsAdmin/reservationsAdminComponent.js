@@ -84,9 +84,9 @@ class ReservationsAdmin extends Component {
     this.getReservations({ accountId, scooterId })
   }
 
-  getReservations = async (where = {}) => {
-    const [err, reservations] = await to(ReservationService.getWhere({
-      where,
+  getReservations = async (where) => {
+    const [err, reservations] = await to(ReservationService.getAll({
+      where: where || null,
       selectFields: ['startDate', 'endDate', 'photo', 'model', 'firstName', 'lastName'],
       orderBy: {
         endDate: 'desc'
@@ -117,7 +117,7 @@ class ReservationsAdmin extends Component {
       return
     }
 
-    ReservationService.deleteReservation({ reservationId })
+    ReservationService.remove({ reservationId })
     .then(() => {
       const { accountId, scooterId } = this.props.match.params
 

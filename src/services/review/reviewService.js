@@ -1,59 +1,65 @@
 import HttpService from 'services/http/httpService.js'
+import qsStringify from 'qs-stringify'
 
-export function getAll({ selectFields }) {
-  const endpoint = '/reviews/get'
-  const body = {
-    all: true,
-    selectFields
+export function getAll({ selectFields, where, orderBy }) {
+  const endpoint = '/reviews'
+  const queryFields = {}
+
+  if (selectFields) queryFields.selectFields = selectFields
+  if (where) queryFields.where = where
+  if (orderBy) queryFields.orderBy = orderBy
+
+  if (queryFields.where) {
+    Object.entries(queryFields.where).forEach(([key, value]) => {
+      if (!value) {
+        delete queryFields.where[key]
+      }
+    })
   }
 
-  return HttpService.post({ endpoint, body })
+  return HttpService.get({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
 }
 
-export function getWhere({ where, selectFields }) {
-  const endpoint = '/reviews/get'
-  const body = {
-    where,
-    selectFields
-  }
+export function getById({ reviewId, selectFields}) {
+  const endpoint = `/reviews/${reviewId}`
+  const queryFields = {}
 
-  return HttpService.post({ endpoint, body })
+  if (selectFields) queryFields.selectFields = selectFields
+
+  return HttpService.get({ endpoint: `${endpoint}?${qsStringify(queryFields)}` })
 }
 
-export function createReview({ accountId, scooterId, data }) {
-  const endpoint = '/reviews/create'
+export function create({ accountId, scooterId, rating, text }) {
+  const endpoint = '/reviews'
   const body = {
     accountId,
     scooterId,
-    data
+    rating,
+    text
   }
 
   return HttpService.post({ endpoint, body })
 }
 
-export function deleteReview({ reviewId }) {
-  const endpoint = '/reviews/delete'
+export function edit({ reviewId, updateMap }) {
+  const endpoint = `/reviews/${reviewId}`
   const body = {
-    reviewId
-  }
-
-  return HttpService.remove({ endpoint, body })
-}
-
-export function editReview({ reviewId, updateMap }) {
-  const endpoint = '/reviews/edit'
-  const body = {
-    reviewId,
     updateMap
   }
 
   return HttpService.put({ endpoint, body })
 }
 
+export function remove({ reviewId }) {
+  const endpoint = `/reviews/${reviewId}`
+
+  return HttpService.remove({ endpoint })
+}
+
 export default {
   getAll,
-  getWhere,
-  createReview,
-  deleteReview,
-  editReview
+  getById,
+  create,
+  edit,
+  remove
 }
