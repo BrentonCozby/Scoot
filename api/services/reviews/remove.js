@@ -26,9 +26,7 @@ async function routeHandler(req, res, next) {
   }
 
   if (!reviews[0]) {
-    return res.status(200).json({
-      message: `Review deleted with reviewId: ${reviewId}`
-    })
+    return res.status(204)
   }
 
   if (reviews[0].accountId !== req.user.accountId) {
@@ -47,9 +45,7 @@ async function routeHandler(req, res, next) {
     return next(deleteErr)
   }
 
-  res.status(200).json({
-    message: `Review deleted with reviewId: ${reviewId}`
-  })
+  res.status(204)
 }
 
 module.exports = [

@@ -20,7 +20,7 @@ async function routeHandler(req, res, next) {
     return next(deleteErr)
   }
 
-  res.status(200).json({ message: `Account deleted with accountId: ${accountId}` })
+  res.status(204)
 }
 
 module.exports = [

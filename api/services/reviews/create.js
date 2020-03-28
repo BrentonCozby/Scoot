@@ -14,17 +14,17 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [createErr, result] = await to(queries.createReview({ accountId, scooterId, rating, text }))
+  const [createErr, resultList] = await to(queries.createReview({ accountId, scooterId, rating, text }))
 
   if (createErr) {
     return next(createErr)
   }
 
-  if (result.rowCount === 0) {
+  if (!resultList[0]) {
     return next('Review not created.')
   }
 
-  res.json({ message: 'Review created' })
+  res.status(201).json({ message: 'Review created', review: resultList[0] })
 }
 
 module.exports = [

@@ -54,7 +54,7 @@ export function edit({ accountId, updateMap }) {
 }
 
 export function updatePassword({ accountId, newPassword }) {
-  const endpoint = `/accounts/${accountId}/update-password`
+  const endpoint = `/accounts/${accountId}`
   const body = {
     newPassword
   }

@@ -78,22 +78,25 @@ export function create({ photo, photoUpload, model, color, description, lat, lng
   return HttpService.post({ endpoint, body, formData })
 }
 
-export function edit({ scooterId, updateMap }) {
+export function edit({ scooterId, updateMap, image }) {
   const endpoint = `/scooters/${scooterId}`
-  const body = {
+  let body = {
     updateMap
   }
+  let formData = null
 
-  return HttpService.put({ endpoint, body })
-}
+  if (image) {
+    formData = new FormData()
+    formData.append('image', image)
 
-export function uploadScooterImage({ scooterId, image }) {
-  const endpoint = `/scooters/${scooterId}/scooter-image`
-  const formData = new FormData()
+    Object.entries(body).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
 
-  formData.append('image', image)
+    body = undefined
+  }
 
-  return HttpService.put({ endpoint, formData })
+  return HttpService.put({ endpoint, body, formData })
 }
 
 export function remove({ scooterId }) {
@@ -116,6 +119,5 @@ export default {
   getById,
   create,
   edit,
-  uploadScooterImage,
   remove
 }

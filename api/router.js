@@ -13,7 +13,6 @@ router.get('/accounts', ...accounts.get)
 router.get('/accounts/:accountId', ...accounts.get)
 router.post('/accounts', ...accounts.create)
 router.put('/accounts/:accountId', ...accounts.edit)
-router.patch('/accounts/:accountId/update-password', ...accounts.updatePassword)
 router.delete('/accounts/:accountId', ...accounts.remove)
 
 router.get('/reservations', ...reservations.get)
@@ -32,7 +31,6 @@ router.get('/scooters', ...scooters.get)
 router.get('/scooters/:scooterId', ...scooters.get)
 router.post('/scooters', ...scooters.create)
 router.put('/scooters/:scooterId', ...scooters.edit)
-router.put('/scooters/:scooterId/scooter-image', ...scooters.uploadImage)
 router.delete('/scooters/:scooterId', ...scooters.remove)
 
 module.exports = router

@@ -14,7 +14,7 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  let [getErr, reservations] = await to(queries.get({
+  let [getErr, resultList] = await to(queries.get({
     where: {
       reservationId
     }
@@ -24,10 +24,8 @@ async function routeHandler(req, res, next) {
     return next(getErr)
   }
 
-  if (!reservations[0]) {
-    return res.status(200).json({
-      message: `Reservation deleted with reservationId: ${reservationId}`
-    })
+  if (!resultList[0]) {
+    return res.status(204)
   }
 
   let isAuthorizedByRole = true
@@ -47,9 +45,7 @@ async function routeHandler(req, res, next) {
     return next(deleteErr)
   }
 
-  res.status(200).json({
-    message: `Reservation deleted with reservationId: ${reservationId}`
-  })
+  res.status(204)
 }
 
 module.exports = [

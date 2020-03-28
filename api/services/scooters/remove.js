@@ -14,15 +14,13 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [deleteErr, result] = await to(queries.remove({scooterId}))
+  const [deleteErr] = await to(queries.remove({scooterId}))
 
   if (deleteErr) {
     return next(deleteErr)
   }
 
-  res.status(200).json({
-    message: `Scooter deleted with scooterId: ${scooterId}`
-  })
+  res.status(204)
 }
 
 module.exports = [

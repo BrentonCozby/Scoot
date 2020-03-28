@@ -31,17 +31,17 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [createErr, result] = await to(queries.create({ email, password, firstName, lastName, roles }))
+  const [createErr, resultList] = await to(queries.create({ email, password, firstName, lastName, roles }))
 
   if (createErr) {
     return next(createErr)
   }
 
-  if (result.rowCount === 0) {
+  if (!resultList[0]) {
     return next('Account not created.')
   }
 
-  res.json({ message: 'Account created.' })
+  res.status(201).json({ message: 'Account created.', account: resultList[0] })
 }
 
 module.exports = [routeHandler]

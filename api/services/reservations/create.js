@@ -14,17 +14,17 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [createErr, result] = await to(queries.create({ accountId, scooterId, startDate, endDate }))
+  const [createErr, resultList] = await to(queries.create({ accountId, scooterId, startDate, endDate }))
 
   if (createErr) {
     return next(createErr)
   }
 
-  if (result.rowCount === 0) {
+  if (!resultList[0]) {
     return next('Reservation not created.')
   }
 
-  res.json({ message: 'Reservation created', rows: result.rows })
+  res.status(201).json({ message: 'Reservation created', reservation: resultList[0] })
 }
 
 module.exports = [

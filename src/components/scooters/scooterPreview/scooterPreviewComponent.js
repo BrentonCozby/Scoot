@@ -35,4 +35,4 @@ function ScooterPreview ({
   )
 }
 
-export default ScooterPreview
+export default React.memo(ScooterPreview)

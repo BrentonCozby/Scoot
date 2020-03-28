@@ -167,7 +167,7 @@ class EditScooterModal extends Component {
     }
 
     const [uploadErr] = await to(this.state.imageUpload
-      ? ScooterService.uploadScooterImage({
+      ? ScooterService.edit({
         scooterId: this.state.fields.scooterId.attributes.value,
         image: this.state.imageUpload
       })
@@ -199,7 +199,7 @@ class EditScooterModal extends Component {
     }
 
     const [uploadErr] = await to(this.state.imageUpload
-      ? ScooterService.uploadScooterImage({
+      ? ScooterService.edit({
         scooterId: this.state.fields.scooterId.attributes.value,
         image: this.state.imageUpload
       })

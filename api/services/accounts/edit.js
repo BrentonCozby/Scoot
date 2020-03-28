@@ -1,10 +1,29 @@
 const { authMiddleware } = require('@root/authMiddleware.js')
-const { verifyOneOfRolesMiddleware, validateRequiredParams, to } = require('@utils/index.js')
+const { validateRequiredParams, to } = require('@utils/index.js')
 const queries = require('./queries/index.js')
 
 async function routeHandler(req, res, next) {
+  const {newPassword} = req.body
+
+  if (newPassword) {
+    return handleNewPassword(req, res, next)
+  }
+
+  return handleUpdateMap(req, res, next)
+}
+
+async function handleUpdateMap(req, res, next) {
   const {accountId} = req.params
   const {updateMap} = req.body
+
+  let isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
+
+  if (!isAuthorizedByRole) {
+    return res.status(403).json({
+      message: 'Forbidden by role',
+      roles: req.user.roles
+    })
+  }
 
   const pathValidation = validateRequiredParams(['accountId'], req.params)
   const bodyValidation = validateRequiredParams(['updateMap'], req.body)
@@ -46,8 +65,46 @@ async function routeHandler(req, res, next) {
   res.json({ message: `Account updated with accountId: ${accountId}` })
 }
 
+async function handleNewPassword(req, res, next) {
+  const {accountId} = req.params
+  const {newPassword} = req.body
+
+  const pathValidation = validateRequiredParams(['accountId'], req.params)
+  const bodyValidation = validateRequiredParams(['newPassword'], req.body)
+
+  if (!pathValidation.isValid || !bodyValidation.isValid) {
+    return res.status(400).json({
+      message: 'Missing parameters',
+      pathParamsErrors: pathValidation.messageMap,
+      bodyParamsErrors: bodyValidation.messageMap
+    })
+  }
+
+  let isAuthorizedByRole = true
+
+  if (accountId !== req.user.accountId) {
+    const rolesList = (req.user.roles || '').split(' ')
+
+    isAuthorizedByRole = verifyOneOfRoles(['admin', 'manager'], rolesList)
+  }
+
+  if (!isAuthorizedByRole) {
+    return res.status(403).json({
+      message: 'Forbidden by role. Cannot change password of another account.',
+      roles: req.user.roles
+    })
+  }
+
+  const [updateErr] = await to(queries.updatePassword({accountId, newPassword}))
+
+  if (updateErr) {
+    return next(updateErr)
+  }
+
+  res.json({ message: `Password updated for accountId: ${accountId}` })
+}
+
 module.exports = [
   authMiddleware,
-  verifyOneOfRolesMiddleware(['admin', 'manager']),
   routeHandler
 ]

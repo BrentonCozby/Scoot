@@ -17,7 +17,7 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [getErr, reservations] = await to(queries.get({
+  const [getErr, resultList] = await to(queries.get({
     where: {
       reservationId
     }
@@ -27,7 +27,7 @@ async function routeHandler(req, res, next) {
     return next(getErr)
   }
 
-  if (!reservations[0]) {
+  if (!resultList[0]) {
     return res.status(404).json({
       message: `Could not find reservation with reservationId: ${reservationId}`,
       pathParamsErrors: {

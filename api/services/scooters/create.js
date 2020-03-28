@@ -15,17 +15,17 @@ async function routeHandler(req, res, next) {
     })
   }
 
-  const [createErr, result] = await to(queries.create({model, photo, color, description, lat, lng}))
+  const [createErr, resultList] = await to(queries.create({model, photo, color, description, lat, lng}))
 
   if (createErr) {
     return next(createErr)
   }
 
-  if (result.rowCount === 0) {
+  if (!resultList[0]) {
     return next('Scooter not created.')
   }
 
-  res.json({ message: 'Scooter created' })
+  res.status(201).json({ message: 'Scooter created', scooter: resultList[0] })
 }
 
 module.exports = [
